@@ -48,6 +48,8 @@ add_executable(StockSimulator
     MainMenuState.cpp
     PlayingState.hpp
     PlayingState.cpp
+    Company.hpp
+    Commodity.hpp
 )
 
 if(MSVC)
@@ -65,3 +67,4 @@ target_link_libraries(StockSimulator PRIVATE
     SFML::System
     ImGui-SFML::ImGui-SFML
 )
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/assets DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
