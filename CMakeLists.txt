@@ -38,9 +38,16 @@ FetchContent_Declare(imgui_sfml
 FetchContent_MakeAvailable(imgui_sfml)
 
 add_executable(StockSimulator 
-    main.cpp 
+    main.cpp
+    Game.hpp
+    GameState.hpp 
     ${implot_SOURCE_DIR}/implot.cpp
     ${implot_SOURCE_DIR}/implot_items.cpp
+    Game.cpp
+    MainMenuState.hpp
+    MainMenuState.cpp
+    PlayingState.hpp
+    PlayingState.cpp
 )
 
 if(MSVC)
