@@ -50,6 +50,7 @@ add_executable(StockSimulator
     PlayingState.cpp
     Company.hpp
     Commodity.hpp
+    Sector.hpp
 )
 
 if(MSVC)

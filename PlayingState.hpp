@@ -12,6 +12,7 @@ struct GameTime
     int monthInQuarter = 1;
     int day = 1;
     int hour = 9;
+    int minute = 0;
     float accumulator = 0.0f;
     bool update(float dt);
 };
@@ -28,10 +29,14 @@ private:
     std::vector<double> timeHistory;
     double totalSimulatedHours = 0;
 
-    bool showCompaniesPanel = true;
-    bool showCommoditiesPanel = true;
-    bool showDetailsPanel = true;
-    bool showChartPanel = true;
+    bool showCompaniesPanel = false;
+    bool showCommoditiesPanel = false;
+    bool showDetailsPanel = false;
+    bool showChartPanel = false;
+
+    bool autoScrollX = true;
+
+    static constexpr size_t MAX_HISTORY_SIZE = 300;
 
     void generateStartingCompanies();
     void generateStartingCommodities();
