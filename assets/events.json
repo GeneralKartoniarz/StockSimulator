@@ -61,5 +61,34 @@
     "body": "Po weryfikacji Twojej deklaracji podatkowej przyznano zwrot nadpłaty w wysokości {AMOUNT} PLN. Środki przełano bezpośrednio na konto bankowe.",
     "amount": 1500.0,
     "isBill": false
+  },
+  {
+    "category": "TipOffer",
+    "sender": "Tajemniczy Informator",
+    "subject": "OFERTA: Tajny przeciek ws. spółki {COMPANY_NAME}",
+    "body": "Mam poufne informacje o nadchodzącym raporcie finansowym spółki {COMPANY_NAME}. Przekaże Ci je za {AMOUNT} PLN.",
+    "amount": 2500.0,
+    "targetType": "RandomCompany",
+    "trendModifier": 0.015,
+    "durationHours": 72.0,
+    "minDelayDays": 2,
+    "maxDelayDays": 4,
+    "successBody": "RAPORT POTWIERDZONY: Spółka {COMPANY_NAME} podaje rekordowe zyski! Kurs gwałtownie rośnie.",
+    "failBody": "RAPORT FAŁSZYWY: Pogłoski o wynikach {COMPANY_NAME} okazały się rynkową plotką. Kurs bez zmian."
+  },
+  {
+    "category": "TipOffer",
+    "sender": "Analityk z Wall Street",
+    "subject": "TAJNE: Przeciek z sektora Tech",
+    "body": "Posiadam nieoficjalny wgląd w decyzje patentowe. Dostęp do analizy kosztuje {AMOUNT} PLN.",
+    "amount": 3500.0,
+    "targetType": "Sector",
+    "targetSector": "Tech",
+    "trendModifier": 0.012,
+    "durationHours": 96.0,
+    "minDelayDays": 3,
+    "maxDelayDays": 6,
+    "successBody": "PRZEŁOM W TECH: Przyznano kluczowe patenty! Akcje spółek technologicznych mocno w górę.",
+    "failBody": "DECYZJA ODKAZANA: Patent został odrzucony przez urząd. Sektor Tech bez zmian."
   }
 ]

@@ -217,7 +217,6 @@ void PlayingState::update(sf::Time deltaTime)
         timeHistory.push_back(totalSimulatedHours);
 
         eventSystem.update(0.25);
-
         if (gameTime.day != lastRecordedDay)
         {
             lastRecordedDay = gameTime.day;
@@ -226,11 +225,19 @@ void PlayingState::update(sf::Time deltaTime)
             char timeBuffer[64];
             snprintf(timeBuffer, sizeof(timeBuffer), "R%d M%d D%02d", gameTime.year, gameTime.monthInQuarter, gameTime.day);
 
+            if (gameTime.day == 1)
+            {
+                bankSystem.updateMacroeconomy(inbox, nextMailId, timeBuffer);
+            }
+            eventSystem.processPendingEvents(inbox, nextMailId, timeBuffer);
+
             eventSystem.checkAndTriggerRandomEvent(companies, commodities, bankBalance, inbox, nextMailId, timeBuffer);
 
             if (daysPassedCounter >= 7)
             {
                 daysPassedCounter = 0;
+
+                bankSystem.processWeeklyInterest(bankBalance, inbox, nextMailId, timeBuffer);
 
                 eventSystem.generateWeeklyLivingBill(calculateNetWorth(), inbox, nextMailId, timeBuffer);
 
@@ -264,6 +271,12 @@ void PlayingState::update(sf::Time deltaTime)
         double cobPrice = commodities[2].currentPrice;
         double xauPrice = commodities[3].currentPrice;
         double uraPrice = commodities[4].currentPrice;
+
+        double interestRateImpact = 0.0;
+        if (bankSystem.getBaseInterestRate() > 0.07)
+        {
+            interestRateImpact = -0.0003 * (bankSystem.getBaseInterestRate() / 0.07);
+        }
 
         for (auto &c : companies)
         {
@@ -304,9 +317,9 @@ void PlayingState::update(sf::Time deltaTime)
             }
 
             double eventMod = eventSystem.getCompanyTrendModifier(c.id, c.sector);
-
             double marketNoise = gauss(rng) * c.volatility;
-            double totalReturn = c.baseTrend + sectorImpact + eventMod + marketNoise;
+
+            double totalReturn = c.baseTrend + sectorImpact + eventMod + interestRateImpact + marketNoise;
 
             c.currentPrice = std::max(0.01, c.currentPrice * (1.0 + totalReturn));
             c.priceHistory.push_back(c.currentPrice);
@@ -477,7 +490,65 @@ void PlayingState::renderMailPanel()
     }
     ImGui::End();
 }
+void PlayingState::renderBankPanel()
+{
+    ImVec2 screenCenter(ImGui::GetIO().DisplaySize.x / 2.0f, ImGui::GetIO().DisplaySize.y / 2.0f);
+    ImGui::SetNextWindowPos(screenCenter, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(500, 380), ImGuiCond_FirstUseEver);
 
+    if (ImGui::Begin("Bank & Linia Kredytowa", &showBankPanel))
+    {
+        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.8f, 1.0f), "WSKAŹNIKI MAKROEKONOMICZNE");
+        ImGui::Separator();
+        ImGui::Text("Inflacja roczna: %.1f%%", bankSystem.getInflationRate() * 100.0);
+        ImGui::Text("Stopa referencyjna NBP: %.1f%%", bankSystem.getBaseInterestRate() * 100.0);
+        ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "Oprocentowanie kredytu: %.1f%%", bankSystem.getLoanInterestRate() * 100.0);
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        ImGui::TextColored(ImVec4(0.2f, 0.9f, 0.2f, 1.0f), "STAN TWOJEGO KREDYTU");
+        ImGui::Text("Majątek całkowity: %.2f PLN", calculateNetWorth());
+        ImGui::Text("Ocena kredytowa (Mnożnik): %.1fx", bankSystem.getCreditScoreMultiplier());
+        ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "Aktualne zadłużenie: %.2f PLN", bankSystem.getPlayerDebt());
+
+        double maxLoan = bankSystem.calculateMaxLoan(calculateNetWorth());
+        ImGui::Text("Dostępna zdolność kredytowa: %.2f PLN", maxLoan);
+        ImGui::Text("Szacowana odsetka tygodniowa: %.2f PLN", bankSystem.calculateWeeklyInterest());
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        ImGui::InputDouble("Kwota (PLN)", &loanAmountInput, 100.0, 1000.0, "%.2f");
+        if (loanAmountInput < 100.0)
+            loanAmountInput = 100.0;
+
+        bool canBorrow = (loanAmountInput <= maxLoan);
+        if (!canBorrow)
+            ImGui::BeginDisabled();
+        if (ImGui::Button("WEŹ KREDYT", ImVec2(150, 32)))
+        {
+            bankSystem.takeLoan(loanAmountInput, bankBalance, calculateNetWorth());
+        }
+        if (!canBorrow)
+            ImGui::EndDisabled();
+
+        ImGui::SameLine();
+
+        bool canRepay = (bankSystem.getPlayerDebt() > 0.0 && bankBalance >= loanAmountInput);
+        if (!canRepay)
+            ImGui::BeginDisabled();
+        if (ImGui::Button("SPŁAĆ KREDYT", ImVec2(150, 32)))
+        {
+            bankSystem.repayLoan(loanAmountInput, bankBalance);
+        }
+        if (!canRepay)
+            ImGui::EndDisabled();
+    }
+    ImGui::End();
+}
 void PlayingState::renderPortfolioPanel()
 {
     ImGuiIO &io = ImGui::GetIO();
@@ -623,6 +694,8 @@ void PlayingState::renderImGui()
     ImGui::Checkbox("Szczegóły Analizy", &showDetailsPanel);
     ImGui::SameLine();
     ImGui::Checkbox("Wykresy", &showChartPanel);
+    ImGui::SameLine();
+    ImGui::Checkbox("Bank & Kredyt", &showBankPanel);
 
     ImGui::Spacing();
     ImGui::Separator();
@@ -630,7 +703,7 @@ void PlayingState::renderImGui()
 
     if (ImGui::Button("Zbankrutuj", ImVec2(-1, 30)))
     {
-        game->changeState(std::make_unique<BankruptcyState>(game)); 
+        game->changeState(std::make_unique<BankruptcyState>(game));
     }
     ImGui::End();
 
@@ -638,7 +711,10 @@ void PlayingState::renderImGui()
     {
         renderMailPanel();
     }
-
+    if (showBankPanel)
+    {
+        renderBankPanel();
+    }
     if (showPortfolioPanel)
     {
         renderPortfolioPanel();

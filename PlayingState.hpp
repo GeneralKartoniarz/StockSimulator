@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <optional>
 #include <string>
-
+#include "BankSystem.hpp"
 struct GameTime
 {
     int year = 1;
@@ -63,6 +63,12 @@ private:
     bool autoScrollX = true;
 
     static constexpr size_t MAX_HISTORY_SIZE = 1300;
+
+    BankSystem bankSystem;
+    bool showBankPanel = false;
+    double loanAmountInput = 3000.0; 
+
+    void renderBankPanel();
 
     void generateStartingCompanies();
     void generateStartingCommodities();

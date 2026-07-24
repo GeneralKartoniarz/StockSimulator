@@ -60,6 +60,8 @@ add_executable(StockSimulator
     MainMenuState.cpp
     BankruptcyState.hpp   
     BankruptcyState.cpp
+    BankSystem.hpp
+    BankSystem.cpp
     PlayingState.hpp
     PlayingState.cpp
     Company.hpp
