@@ -19,6 +19,7 @@ Game::Game() : window(sf::VideoMode({1280, 720}), "Symulator Gieldy") {
     };
     std::string absolutePath = std::filesystem::absolute("assets/arial.ttf").generic_string();
     io.Fonts->AddFontFromFileTTF(absolutePath.c_str(), 24.0f, nullptr, ranges);
+    io.Fonts->AddFontFromFileTTF(absolutePath.c_str(), 90.0f, nullptr, ranges);
     if (!ImGui::SFML::UpdateFontTexture()) {
         std::cerr << "[BLAD] Nie udalo sie zaktualizowac tekstury czcionki w SFML!\n";
     }

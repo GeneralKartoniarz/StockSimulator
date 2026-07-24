@@ -1,9 +1,18 @@
 #pragma once
+#include <nlohmann/json.hpp>
 
 enum class Sector {
-    Tech,         // Technologie
-    Automotive,   // Motoryzacja
-    Energy,       // Paliwa, atom, energia
-    Luxury,       // Dobra luksusowe
-    Consumer      // Rozrywka
+    Tech,     
+    Automotive,  
+    Energy,      
+    Luxury,      
+    Consumer     
 };
+
+NLOHMANN_JSON_SERIALIZE_ENUM(Sector, {
+    {Sector::Tech, "Tech"},
+    {Sector::Automotive, "Automotive"},
+    {Sector::Energy, "Energy"},
+    {Sector::Luxury, "Luxury"},
+    {Sector::Consumer, "Consumer"}
+})

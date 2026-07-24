@@ -1,0 +1,65 @@
+[
+  {
+    "category": "Global",
+    "sender": "Bloomberg & Rynki Światowe",
+    "subject": "PILNE: Załamanie na rynku Ropy Naftowej!",
+    "body": "OPEC nie osiągnął porozumienia w sprawie limitów wydobycia. Ceny Ropy Naftowej drastically spadają!",
+    "targetType": "Commodity",
+    "targetSymbol": "OIL",
+    "trendModifier": -0.008,
+    "durationHours": 72.0
+  },
+  {
+    "category": "Global",
+    "sender": "Tech Crunch Daily",
+    "subject": "Hossa w sektorze technologicznym!",
+    "body": "Nowa generacja przełomowych procesorów zrewolucjonizowała rynek. Inwestorzy masowo kupują akcje spółek z sektora Tech.",
+    "targetType": "Sector",
+    "targetSector": "Tech",
+    "trendModifier": 0.006,
+    "durationHours": 48.0
+  },
+  {
+    "category": "Company",
+    "sender": "Giełdowy Ekspress",
+    "subject": "SKANDAL: Parówkagate w sieci Płazka!",
+    "body": "Sanepid zamknął kilkadziesiąt placówek Płazki po wykryciu nieprawidłowości w partiach hot-dogów. Akcje spółki gwałtownie spadają.",
+    "targetType": "Company",
+    "targetTicker": "PZK",
+    "trendModifier": -0.015,
+    "durationHours": 96.0
+  },
+  {
+    "category": "Company",
+    "sender": "Biznes Informator",
+    "subject": "Gigantyczny kontrakt dla {COMPANY_NAME}!",
+    "body": "Spółka {COMPANY_NAME} ({COMPANY_TICKER}) ogłosiła podpisanie wielomilionowej umowy z rządem. Analitycy przewidują wzrost kursu.",
+    "targetType": "RandomCompany",
+    "trendModifier": 0.010,
+    "durationHours": 48.0
+  },
+  {
+    "category": "Private",
+    "sender": "Warsztat Auto-Naprawa",
+    "subject": "RACHUNEK: Naprawa samochodu po kolizji",
+    "body": "Twój samochód uległ awarii. Wystawiono fakturę za naprawę na kwotę {AMOUNT} PLN. Prosimy o uregulowanie płatności.",
+    "amount": 2800.0,
+    "isBill": true
+  },
+  {
+    "category": "Private",
+    "sender": "Serwis AGD/RTV",
+    "subject": "RACHUNEK: Naprawa komputera i AGD",
+    "body": "W Twoim mieszkaniu doszło do spięcia. Faktura za naprawę sprzętu wynosi {AMOUNT} PLN i oczekuje na płatność.",
+    "amount": 1200.0,
+    "isBill": true
+  },
+  {
+    "category": "Private",
+    "sender": "Urząd Skarbowy",
+    "subject": "Zwrot nadpłaty podatku PIT",
+    "body": "Po weryfikacji Twojej deklaracji podatkowej przyznano zwrot nadpłaty w wysokości {AMOUNT} PLN. Środki przełano bezpośrednio na konto bankowe.",
+    "amount": 1500.0,
+    "isBill": false
+  }
+]

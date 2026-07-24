@@ -1,0 +1,47 @@
+[
+  {
+    "id": 0,
+    "name": "Ropa Naftowa (Brent)",
+    "symbol": "OIL",
+    "currentPrice": 75.50,
+    "unit": "PLN/bbl",
+    "baseTrend": 0.0001,
+    "volatility": 0.007
+  },
+  {
+    "id": 1,
+    "name": "Krzem (Polikrystaliczny)",
+    "symbol": "SIL",
+    "currentPrice": 15.20,
+    "unit": "PLN/kg",
+    "baseTrend": 0.0002,
+    "volatility": 0.010
+  },
+  {
+    "id": 2,
+    "name": "Kobalt",
+    "symbol": "COB",
+    "currentPrice": 35000.00,
+    "unit": "PLN/t",
+    "baseTrend": 0.0001,
+    "volatility": 0.012
+  },
+  {
+    "id": 3,
+    "name": "Złoto",
+    "symbol": "XAU",
+    "currentPrice": 1950.00,
+    "unit": "PLN/oz",
+    "baseTrend": 0.00005,
+    "volatility": 0.004
+  },
+  {
+    "id": 4,
+    "name": "Uran",
+    "symbol": "URA",
+    "currentPrice": 50.75,
+    "unit": "PLN/lb",
+    "baseTrend": 0.0003,
+    "volatility": 0.015
+  }
+]

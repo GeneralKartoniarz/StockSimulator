@@ -1,0 +1,202 @@
+[
+  {
+    "id": 0,
+    "ticker": "MAC",
+    "name": "Macrosoft",
+    "description": "Gigant technologiczny, który zmonopolizował rynek systemów operacyjnych dla lodówek.",
+    "currentPrice": 150.50,
+    "sector": "Tech",
+    "baseTrend": 0.0005,
+    "volatility": 0.012
+  },
+  {
+    "id": 1,
+    "ticker": "PPL",
+    "name": "Pear",
+    "description": "Producent absurdalnie drogich telefonów z nadgryzioną gruszką w logo.",
+    "currentPrice": 320.00,
+    "sector": "Tech",
+    "baseTrend": 0.0008,
+    "volatility": 0.015
+  },
+  {
+    "id": 2,
+    "ticker": "GGL",
+    "name": "Gargle",
+    "description": "Wyszukiwarka, która wie o Tobie więcej niż Ty sam.",
+    "currentPrice": 2500.00,
+    "sector": "Tech",
+    "baseTrend": 0.0006,
+    "volatility": 0.010
+  },
+  {
+    "id": 3,
+    "ticker": "AZN",
+    "name": "Amazonia",
+    "description": "Kiedyś księgarnia, teraz dostarczają paczki dronami i kontrolują 90% chmury.",
+    "currentPrice": 3300.00,
+    "sector": "Consumer",
+    "baseTrend": 0.0007,
+    "volatility": 0.014
+  },
+  {
+    "id": 4,
+    "ticker": "TSL",
+    "name": "Tusla",
+    "description": "Auta elektryczne wysyłane w kosmos przez ekscentrycznego miliardera.",
+    "currentPrice": 750.25,
+    "sector": "Automotive",
+    "baseTrend": 0.0002,
+    "volatility": 0.035
+  },
+  {
+    "id": 5,
+    "ticker": "NVD",
+    "name": "Novadia",
+    "description": "Ich karty graficzne są tak drogie, że gracze muszą brać na nie kredyt hipoteczny.",
+    "currentPrice": 420.69,
+    "sector": "Tech",
+    "baseTrend": 0.0015,
+    "volatility": 0.025
+  },
+  {
+    "id": 6,
+    "ticker": "MTA",
+    "name": "Metaverse",
+    "description": "Korporacja, która próbuje zamknąć ludzkość w wirtualnych goglach.",
+    "currentPrice": 330.10,
+    "sector": "Consumer",
+    "baseTrend": -0.0002,
+    "volatility": 0.020
+  },
+  {
+    "id": 7,
+    "ticker": "NFL",
+    "name": "Netflux",
+    "description": "Platforma VOD. Kasują najlepsze seriale po pierwszym sezonie.",
+    "currentPrice": 550.00,
+    "sector": "Consumer",
+    "baseTrend": 0.0001,
+    "volatility": 0.018
+  },
+  {
+    "id": 8,
+    "ticker": "INT",
+    "name": "Intal",
+    "description": "Producent procesorów. Kiedyś potęga, teraz głównie grzeją pokoje zimą.",
+    "currentPrice": 55.40,
+    "sector": "Tech",
+    "baseTrend": -0.0008,
+    "volatility": 0.014
+  },
+  {
+    "id": 9,
+    "ticker": "AMD",
+    "name": "Advanced Micro",
+    "description": "Główny rywal Intala, ratujący rynek przed całkowitym marazmem.",
+    "currentPrice": 110.80,
+    "sector": "Tech",
+    "baseTrend": 0.0006,
+    "volatility": 0.022
+  },
+  {
+    "id": 10,
+    "ticker": "ORU",
+    "name": "Orzełek SA",
+    "description": "Narodowy monopolista paliwowy. Ceny na ich stacjach rosną, gdy ropa drożeje, i rosną, gdy tanieje.",
+    "currentPrice": 85.00,
+    "sector": "Energy",
+    "baseTrend": 0.0003,
+    "volatility": 0.008
+  },
+  {
+    "id": 11,
+    "ticker": "IZE",
+    "name": "Izera 2",
+    "description": "Projekt narodowego elektryka. Od lat istnieje tylko w PowerPoint, ale kurs rośnie po każdej kolejnej dotacji rządowej.",
+    "currentPrice": 10.00,
+    "sector": "Automotive",
+    "baseTrend": -0.0015,
+    "volatility": 0.045
+  },
+  {
+    "id": 12,
+    "ticker": "FSR",
+    "name": "Fasari",
+    "description": "Legendarny producent czerwonych supersamochodów. Ich silniki palą tyle co pracownicy Płazki na przerwie.",
+    "currentPrice": 450.00,
+    "sector": "Automotive",
+    "baseTrend": 0.0004,
+    "volatility": 0.018
+  },
+  {
+    "id": 13,
+    "ticker": "JEL",
+    "name": "Jelcznik",
+    "description": "Ciężarówki i pojazdy opancerzone. Design nie zmienił się od stanu wojennego, ale rura wydechowa potrafi zaćmić słońce.",
+    "currentPrice": 125.30,
+    "sector": "Automotive",
+    "baseTrend": 0.0001,
+    "volatility": 0.012
+  },
+  {
+    "id": 14,
+    "ticker": "NUK",
+    "name": "Polski Atom",
+    "description": "Spółka planująca budowę elektrowni jądrowej od 1980 roku. Ich jedynym namacalnym produktem są odprawy dla kolejnych zarządów.",
+    "currentPrice": 25.00,
+    "sector": "Energy",
+    "baseTrend": 0.0000,
+    "volatility": 0.005
+  },
+  {
+    "id": 15,
+    "ticker": "RLX",
+    "name": "Roleksiorz",
+    "description": "Producent zegarków dla ludzi, którzy chcą pokazać status społeczny, którego nie mają. Kupowane głównie na 80 rat 0%.",
+    "currentPrice": 620.00,
+    "sector": "Luxury",
+    "baseTrend": 0.0002,
+    "volatility": 0.009
+  },
+  {
+    "id": 16,
+    "ticker": "WND",
+    "name": "WiatrakPol",
+    "description": "Firma stawiająca farmy wiatrowe, które kręcą się tylko wtedy, gdy prezes mocno dmucha w kwartalne sprawozdanie finansowe.",
+    "currentPrice": 45.15,
+    "sector": "Energy",
+    "baseTrend": 0.0004,
+    "volatility": 0.020
+  },
+  {
+    "id": 17,
+    "ticker": "PZK",
+    "name": "Płazka",
+    "description": "Ogólnopolska sieć sklepów monopolowo-spożywczych. Są na każdym rogu, sprzedając hot-dogi i napoje energetyczne o 22:59.",
+    "currentPrice": 180.00,
+    "sector": "Consumer",
+    "baseTrend": 0.0010,
+    "volatility": 0.011
+  },
+  {
+    "id": 18,
+    "ticker": "ALG",
+    "name": "AlleDrogo",
+    "description": "Portal aukcyjny, gdzie opłaty serwisowe są wyższe niż cena przedmiotu, a darmowa dostawa wymaga trzech doktoratów z regulaminu.",
+    "currentPrice": 95.50,
+    "sector": "Consumer",
+    "baseTrend": 0.0005,
+    "volatility": 0.015
+  },
+  {
+    "id": 19,
+    "ticker": "KBB",
+    "name": "KebsCorp",
+    "description": "Ogólnopolska sieć franczyzowa serwująca miszany miszany. Obroty drastycznie rosną w weekendy.",
+    "currentPrice": 35.20,
+    "sector": "Consumer",
+    "baseTrend": 0.0008,
+    "volatility": 0.013
+  }
+]
