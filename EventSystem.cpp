@@ -104,16 +104,22 @@ void EventSystem::generateWeeklyLivingBill(double netWorth, std::vector<MailMess
     inbox.push_back(mail);
 }
 
-bool EventSystem::processUnpaidBills(double &bankBalance, std::vector<MailMessage> &inbox, int &nextMailId, const std::string &timestamp, Game *game)
+bool EventSystem::processUnpaidBills(double& bankBalance, std::vector<MailMessage>& inbox, int& nextMailId, const std::string& timestamp, Game* game)
 {
     std::vector<MailMessage> newMails;
     size_t currentInboxSize = inbox.size();
 
     for (size_t i = 0; i < currentInboxSize; ++i)
     {
-        auto &mail = inbox[i];
+        auto& mail = inbox[i];
         if (mail.type == MailType::Bill && !mail.isResolved)
         {
+            if (mail.isNew)
+            {
+                mail.isNew = false;
+                continue;
+            }
+
             mail.unpaidWeeks++;
 
             if (mail.unpaidWeeks == 1)
@@ -125,7 +131,7 @@ bool EventSystem::processUnpaidBills(double &bankBalance, std::vector<MailMessag
                 reminder.subject = "PONOWNE ZAWIADOMIENIE: Rachunek #" + std::to_string(mail.id);
                 reminder.timestamp = timestamp;
                 reminder.parentBillId = mail.id;
-                reminder.body = "Przypominamy, że opłata (" + mail.subject + ") na kwotę " +
+                reminder.body = "Przypominamy, że opłata (" + mail.subject + ") na kwotę " + 
                                 std::to_string((int)mail.amount) + " PLN nie została uregulowana. Prosimy o natychmiastową wpłatę.";
                 newMails.push_back(reminder);
             }
@@ -138,7 +144,7 @@ bool EventSystem::processUnpaidBills(double &bankBalance, std::vector<MailMessag
                 warning.subject = "OSTATECZNE WEZWANIE: Rachunek #" + std::to_string(mail.id);
                 warning.timestamp = timestamp;
                 warning.parentBillId = mail.id;
-                warning.body = "OSTATECZNE WEZWANIE DO ZAPŁATY! Rachunek #" + std::to_string(mail.id) +
+                warning.body = "OSTATECZNE WEZWANIE DO ZAPŁATY! Rachunek #" + std::to_string(mail.id) + 
                                " nie został opłacony. W następnym tygodniu sprawa trafi do Komornika z 10% opłatą karną.";
                 newMails.push_back(warning);
             }
@@ -152,8 +158,9 @@ bool EventSystem::processUnpaidBills(double &bankBalance, std::vector<MailMessag
                     mail.isResolved = true;
 
                     int targetId = mail.id;
-                    std::erase_if(inbox, [targetId](const MailMessage &m)
-                                  { return m.parentBillId == targetId; });
+                    std::erase_if(inbox, [targetId](const MailMessage& m) {
+                        return m.parentBillId == targetId;
+                    });
 
                     MailMessage execution;
                     execution.id = nextMailId++;
@@ -161,7 +168,7 @@ bool EventSystem::processUnpaidBills(double &bankBalance, std::vector<MailMessag
                     execution.sender = "Komornik Sądowy";
                     execution.subject = "PRZYMUSOWA EGZEKUCJA: Rachunek #" + std::to_string(mail.id);
                     execution.timestamp = timestamp;
-                    execution.body = "Z Twojego konta pobrano kwotę " +
+                    execution.body = "Z Twojego konta pobrano kwotę " + 
                                      std::to_string((int)totalPenaltyCost) + " PLN (w tym 10% kary) za nieopłacony rachunek #" + std::to_string(mail.id) + ".";
                     newMails.push_back(execution);
                 }

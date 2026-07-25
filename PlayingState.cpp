@@ -785,12 +785,14 @@ void PlayingState::renderImGui()
         ImGui::End();
     }
 
+    // --- WYKRESY ---
     if (showChartPanel)
     {
         ImGui::SetNextWindowPos(screenCenter, ImGuiCond_Appearing, pivotCenter);
-        ImGui::SetNextWindowSize(ImVec2(800, 500), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(850, 600), ImGuiCond_FirstUseEver);
         ImGui::Begin("Analiza Wykresowa", &showChartPanel);
 
+        // Panel filtrów po lewej stronie
         ImGui::BeginChild("PanelFiltrow", ImVec2(200, 0), true);
         ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.8f, 1.0f), "Porównanie Akcji");
         ImGui::Separator();
@@ -810,12 +812,14 @@ void PlayingState::renderImGui()
 
         ImGui::SameLine();
 
+        // Obszar Wykresu i Paski Handlowe po prawej stronie
         ImGui::BeginChild("ObszarWykresu", ImVec2(0, 0), false);
 
         ImGui::Checkbox("Śledź aktualny kurs (Okno 20h)", &autoScrollX);
         ImGui::Spacing();
 
-        if (ImPlot::BeginPlot("Notowania Historyczne", ImVec2(-1, -1)))
+        // Ustalamy stałą wysokość wykresu (320px), aby pod spodem było miejsce na handel
+        if (ImPlot::BeginPlot("Notowania Historyczne", ImVec2(-1, 320)))
         {
             ImPlot::SetupAxis(ImAxis_X1, "Czas (Godziny)", ImPlotAxisFlags_None);
             ImPlot::SetupAxisLimitsConstraints(ImAxis_X1, 0.0, totalSimulatedHours);
@@ -925,14 +929,122 @@ void PlayingState::renderImGui()
 
             ImPlot::EndPlot();
         }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::TextColored(ImVec4(0.0f, 0.9f, 1.0f, 1.0f), "SZYBKI HANDEL ZAZNACZONYCH SPÓŁEK");
+        ImGui::Spacing();
+
+        bool anyCompanySelected = false;
+        static std::map<int, int> chartTradeQuantities; 
+
+        for (auto &company : companies)
+        {
+            if (company.showOnChart)
+            {
+                anyCompanySelected = true;
+                ImGui::PushID(company.id);
+
+                if (chartTradeQuantities.find(company.id) == chartTradeQuantities.end())
+                {
+                    chartTradeQuantities[company.id] = 1;
+                }
+                int &qty = chartTradeQuantities[company.id];
+
+                int ownedShares = 0;
+                auto itPos = portfolio.find(company.id);
+                if (itPos != portfolio.end())
+                {
+                    ownedShares = itPos->second.quantity;
+                }
+
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "[ %s ]", company.ticker.c_str());
+                ImGui::SameLine();
+                ImGui::Text("Kurs: %.2f PLN | Posiadasz: %d szt.", company.currentPrice, ownedShares);
+
+                ImGui::PushItemWidth(100);
+                ImGui::InputInt("Ilość", &qty);
+                ImGui::PopItemWidth();
+                if (qty < 1) qty = 1;
+
+                double stockCost = company.currentPrice * qty;
+                double totalBuyCost = stockCost * (1.0 + suckersFeeRate);
+                double totalSellRevenue = stockCost * (1.0 - suckersFeeRate);
+
+                ImGui::SameLine();
+
+                bool canBuy = (bankBalance >= totalBuyCost);
+                if (!canBuy) ImGui::BeginDisabled();
+
+                if (ImGui::Button("KUP", ImVec2(75, 0)))
+                {
+                    buyShares(company.id, qty);
+                }
+
+                if (!canBuy) ImGui::EndDisabled();
+
+                if (ImGui::IsItemHovered())
+                {
+                    ImGui::SetTooltip("Koszt zakupu (%d szt. + prowizja): %.2f PLN", qty, totalBuyCost);
+                }
+
+                if (ownedShares > 0)
+                {
+                    ImGui::SameLine();
+
+                    bool canSell = (ownedShares >= qty);
+                    if (!canSell) ImGui::BeginDisabled();
+
+                    if (ImGui::Button("SPRZEDAJ", ImVec2(80, 0)))
+                    {
+                        sellShares(company.id, std::min(qty, ownedShares));
+                    }
+
+                    if (!canSell) ImGui::EndDisabled();
+
+                    if (ImGui::IsItemHovered())
+                    {
+                        ImGui::SetTooltip("Przychód ze sprzedaży (%d szt. - prowizja): %.2f PLN", std::min(qty, ownedShares), totalSellRevenue);
+                    }
+
+                    ImGui::SameLine();
+
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
+
+                    if (ImGui::Button("SPRZEDAJ WSZYSTKO", ImVec2(140, 0)))
+                    {
+                        sellShares(company.id, ownedShares);
+                    }
+
+                    ImGui::PopStyleColor(2);
+
+                    if (ImGui::IsItemHovered())
+                    {
+                        double allRevenue = ownedShares * company.currentPrice * (1.0 - suckersFeeRate);
+                        ImGui::SetTooltip("Sprzedaj wszystkie %d szt. za około %.2f PLN", ownedShares, allRevenue);
+                    }
+                }
+
+                ImGui::Separator();
+                ImGui::PopID();
+            }
+        }
+
+        if (!anyCompanySelected)
+        {
+            ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Zaznacz spółkę na liście po lewej stronie, aby pojawiły się opcje szybkiego handlu.");
+        }
+
         ImGui::EndChild();
         ImGui::End();
     }
 
+    // --- SZCZEGÓŁY ANALIZY I SZYBKI HANDEL ---
     if (showDetailsPanel)
     {
         ImGui::SetNextWindowPos(screenCenter, ImGuiCond_Appearing, pivotCenter);
-        ImGui::SetNextWindowSize(ImVec2(420, 450), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(480, 450), ImGuiCond_FirstUseEver);
         ImGui::Begin("Szczegóły Analizy", &showDetailsPanel);
 
         if (selectedCompanyId.has_value())
@@ -967,52 +1079,92 @@ void PlayingState::renderImGui()
                 {
                     ownedShares = itPos->second.quantity;
                 }
+
+                ImGui::TextColored(ImVec4(0.0f, 0.9f, 1.0f, 1.0f), "SZYBKI HANDEL");
                 ImGui::Text("Posiadane akcje: %d szt.", ownedShares);
 
                 ImGui::Spacing();
+
+                static int tradeQuantity = 1;
+                ImGui::PushItemWidth(120);
                 ImGui::InputInt("Ilość akcji", &tradeQuantity);
-                if (tradeQuantity < 1)
-                    tradeQuantity = 1;
+                ImGui::PopItemWidth();
+                if (tradeQuantity < 1) tradeQuantity = 1;
 
                 double stockCost = selected->currentPrice * tradeQuantity;
                 double fee = stockCost * suckersFeeRate;
                 double totalCost = stockCost + fee;
+                double sellRevenue = stockCost * (1.0 - suckersFeeRate);
 
-                ImGui::Text("Wartość akcji: %.2f PLN", stockCost);
+                ImGui::Text("Wartość transakcji: %.2f PLN", stockCost);
                 ImGui::TextColored(ImVec4(0.9f, 0.4f, 0.1f, 1.0f), "Suckers Fee (%.1f%%): %.2f PLN", suckersFeeRate * 100.0, fee);
                 ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "Razem (Kupno): %.2f PLN", totalCost);
 
                 ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
 
+                // PRZYCISK KUP
                 bool canAfford = (bankBalance >= totalCost);
-                if (!canAfford)
-                    ImGui::BeginDisabled();
-                if (ImGui::Button("KUP", ImVec2(120, 30)))
+                if (!canAfford) ImGui::BeginDisabled();
+
+                if (ImGui::Button("KUP", ImVec2(100, 32)))
                 {
                     buyShares(selected->id, tradeQuantity);
                 }
+
                 if (!canAfford)
                 {
                     ImGui::EndDisabled();
-                    ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "Brak środków w banku!");
+                    if (ImGui::IsItemHovered())
+                    {
+                        ImGui::SetTooltip("Brak wystarczających środków w banku!");
+                    }
                 }
 
-                ImGui::SameLine();
-
-                bool canSell = (ownedShares >= tradeQuantity);
-                if (!canSell)
-                    ImGui::BeginDisabled();
-                if (ImGui::Button("SPRZEDAJ", ImVec2(120, 30)))
+                // PRZYCISKI SPRZEDAŻY (Pojawiają się tylko jeśli gracz posiada akcje firmy)
+                if (ownedShares > 0)
                 {
-                    sellShares(selected->id, tradeQuantity);
+                    ImGui::SameLine();
+
+                    bool canSell = (ownedShares >= tradeQuantity);
+                    if (!canSell) ImGui::BeginDisabled();
+
+                    if (ImGui::Button("SPRZEDAJ", ImVec2(100, 32)))
+                    {
+                        sellShares(selected->id, std::min(tradeQuantity, ownedShares));
+                    }
+
+                    if (!canSell) ImGui::EndDisabled();
+
+                    if (ImGui::IsItemHovered())
+                    {
+                        ImGui::SetTooltip("Przychód ze sprzedaży (po prowizji): %.2f PLN", sellRevenue);
+                    }
+
+                    ImGui::SameLine();
+
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
+
+                    if (ImGui::Button("SPRZEDAJ WSZYSTKO", ImVec2(160, 32)))
+                    {
+                        sellShares(selected->id, ownedShares);
+                    }
+
+                    ImGui::PopStyleColor(2);
+
+                    if (ImGui::IsItemHovered())
+                    {
+                        double totalSellRevenue = ownedShares * selected->currentPrice * (1.0 - suckersFeeRate);
+                        ImGui::SetTooltip("Sprzedaj całe %d szt. za około %.2f PLN", ownedShares, totalSellRevenue);
+                    }
                 }
-                if (!canSell)
-                    ImGui::EndDisabled();
             }
         }
         else
         {
-            ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Wybierz spółkę z listy, aby wyświetlić raport.");
+            ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Wybierz spółkę z listy 'Notowania Spółek', aby wyświetlić raport.");
         }
 
         ImGui::End();
