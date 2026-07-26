@@ -37,7 +37,17 @@ struct PortfolioPosition
     int quantity = 0;
     double avgBuyPrice = 0.0;
 };
-
+struct TradeMarker
+{
+    int companyId = 0;
+    double timeX = 0.0;    
+    double priceY = 0.0;   
+    int quantity = 0;       
+    double buyPrice = 0.0;   
+    std::string dateStr;     
+    bool isBuy = true;        
+    double profitLoss = 0.0;  
+};
 class PlayingState : public GameState
 {
 private:
@@ -72,8 +82,8 @@ private:
 
     bool autoScrollX = true;
 
-    static constexpr size_t MAX_HISTORY_SIZE = 1300;
-
+    static constexpr size_t MAX_HISTORY_SIZE = 5500;
+    std::vector<TradeMarker> tradeMarkers;
     BankSystem bankSystem;
     bool showBankPanel = false;
     double loanAmountInput = 3000.0;

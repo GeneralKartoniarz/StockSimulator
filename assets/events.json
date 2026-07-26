@@ -3,7 +3,7 @@
     "category": "Global",
     "sender": "Bloomberg & Rynki Światowe",
     "subject": "PILNE: Załamanie na rynku Ropy Naftowej!",
-    "body": "OPEC nie osiągnął porozumienia w sprawie limitów wydobycia. Ceny Ropy Naftowej drastically spadają!",
+    "body": "OPEC nie osiągnął porozumienia w sprawie limitów wydobycia. Ceny Ropy Naftowej drastycznie spadają!",
     "targetType": "Commodity",
     "targetSymbol": "OIL",
     "trendModifier": -0.008,
@@ -65,8 +65,8 @@
   {
     "category": "TipOffer",
     "sender": "Tajemniczy Informator",
-    "subject": "OFERTA: Tajny przeciek ws. spółki {COMPANY_NAME}",
-    "body": "Mam poufne informacje o nadchodzącym przełomie w spółce {COMPANY_NAME}. Przekaże Ci je za {AMOUNT} PLN.",
+    "subject": "OFERTA: Tajny przeciek",
+    "body": "Mam poufne informacje o nadchodzącym przełomie w pewnej spółce. Przekaże Ci je za {AMOUNT} PLN.",
     "amount": 2500.0,
     "targetType": "RandomCompany",
     "trendModifier": 0.020,
@@ -80,7 +80,7 @@
   {
     "category": "TipOffer",
     "sender": "Analityk z Wall Street",
-    "subject": "TAJNE: Przeciek z sektora Tech",
+    "subject": "TAJNE: Przecieki",
     "body": "Posiadam nieoficjalny wgląd w decyzje patentowe. Dostęp do analizy kosztuje {AMOUNT} PLN.",
     "amount": 3500.0,
     "targetType": "Sector",
@@ -92,5 +92,238 @@
     "tipDetailBody": "Moje źródła w urzędzie patentowym twierdzą, że kluczowe patenty dla sektora Tech zostaną przyznane w ciągu {DAYS} dni.",
     "successBody": "PRZEŁOM W TECH: Urząd przyznał kluczowe patenty! Akcje spółek technologicznych mocno w górę.",
     "failBody": "DECYZJA ODKAZANA: Urząd odrzucił wnioski patentowe. Sektor Tech bez zmian."
+  },
+  {
+    "category": "TipOffer",
+    "sender": "Analityk z Wall Street",
+    "subject": "TAJNE: Przecieki",
+    "body": "Posiadam nieoficjalny wgląd w decyzje patentowe. Dostęp do analizy kosztuje {AMOUNT} PLN.",
+    "amount": 3500.0,
+    "targetType": "Sector",
+    "targetSector": "Automotive",
+    "trendModifier": 0.015,
+    "durationHours": 96.0,
+    "minDelayDays": 3,
+    "maxDelayDays": 5,
+    "tipDetailBody": "Moje źródła w urzędzie patentowym twierdzą, że kluczowe patenty dla sektora Automotive zostaną przyznane w ciągu {DAYS} dni.",
+    "successBody": "PRZEŁOM W Automotive: Urząd przyznał kluczowe patenty! Akcje spółek motoryzacyjnych mocno w górę.",
+    "failBody": "DECYZJA ODKAZANA: Urząd odrzucił wnioski patentowe. Sektor Automotive bez zmian."
+  },
+  {
+    "category": "Global",
+    "sender": "Silicon Valley Bulletin",
+    "subject": "Awarie w kopalniach Krzemu!",
+    "body": "Trzęsienie ziemi sparaliżowało główne ośrodki wydobycia Krzemu. Ceny surowca gwałtownie rosną na giełdach towarowych.",
+    "targetType": "Commodity",
+    "targetSymbol": "SIL",
+    "trendModifier": 0.008,
+    "durationHours": 72.0
+  },
+  {
+    "category": "Global",
+    "sender": "Międzynarodowa Agencja Energii",
+    "subject": "Renesans Energii Jądrowej",
+    "body": "Kolejne państwa zapowiadają budowę reaktorów modularnych. Zapotrzebowanie na Uran bije historyczne rekordy.",
+    "targetType": "Commodity",
+    "targetSymbol": "URA",
+    "trendModifier": 0.012,
+    "durationHours": 96.0
+  },
+  {
+    "category": "Global",
+    "sender": "Financial Times",
+    "subject": "Napięcia geopolityczne: Inwestorzy uciekają do Złota!",
+    "body": "Niepewność na rynkach światowych skłania fundusze do masowego wykupywania Złota. Kurs szybuje w górę.",
+    "targetType": "Commodity",
+    "targetSymbol": "XAU",
+    "trendModifier": 0.006,
+    "durationHours": 84.0
+  },
+  {
+    "category": "Global",
+    "sender": "Auto Motywacja Daily",
+    "subject": "Kryzys dostaw w branży Moto!",
+    "body": "Brak kluczowych podzespołów zmusza koncerny samochodowe do wstrzymania taśm produkcyjnych. Sektor Automotive zalicza spadki.",
+    "targetType": "Sector",
+    "targetSector": "Automotive",
+    "trendModifier": -0.008,
+    "durationHours": 60.0
+  },
+  {
+    "category": "Global",
+    "sender": "Główny Urząd Statystyczny",
+    "subject": "Szał zakupowy konsumentów!",
+    "body": "Polacy masowo ruszyli do sklepów. Wskaźniki sprzedaży detalicznej wykazują potężny wzrost w sektorze Consumer.",
+    "targetType": "Sector",
+    "targetSector": "Consumer",
+    "trendModifier": 0.007,
+    "durationHours": 48.0
+  },
+
+  {
+    "category": "Company",
+    "sender": "X / Twitter Alerts",
+    "subject": "Prezes Tusli wrzuca kontrowersyjnego mema!",
+    "body": "O 3:00 w nocy prezes spółki Tusla (TSL) opublikował mema z psem. Akcjonariusze panikują, a kurs gwałtownie spada.",
+    "targetType": "Company",
+    "targetTicker": "TSL",
+    "trendModifier": -0.022,
+    "durationHours": 36.0
+  },
+  {
+    "category": "Company",
+    "sender": "Wiadomości Gospodarcze",
+    "subject": "Izera 2 prezentuje nowe slajdy w PowerPoint!",
+    "body": "Spółka Izera 2 (IZE) otrzymała kolejną wielomilionową dotację rządową na pokazanie wizualizacji fabryki. Inwestorzy podnieceni!",
+    "targetType": "Company",
+    "targetTicker": "IZE",
+    "trendModifier": 0.035,
+    "durationHours": 48.0
+  },
+  {
+    "category": "Company",
+    "sender": "Gastronomia Polska",
+    "subject": "KebsCorp wprowadza 'Sos Mieszany Ultra'!",
+    "body": "Premiera nowego sosu w sieci KebsCorp (KBB) wywołała gigantyczne kolejki pod lokalami w całej Polsce. Obroty biją rekordy.",
+    "targetType": "Company",
+    "targetTicker": "KBB",
+    "trendModifier": 0.015,
+    "durationHours": 60.0
+  },
+  {
+    "category": "Company",
+    "sender": "Tech Market Insider",
+    "subject": "Premiera nowej karty od Novadia!",
+    "body": "Novadia (NVD) zaprezentowała nową kartę graficzną. Gracze masowo biorą drugą hipotekę, by złożyć zamówienie w przedsprzedaży.",
+    "targetType": "Company",
+    "targetTicker": "NVD",
+    "trendModifier": 0.020,
+    "durationHours": 72.0
+  },
+  {
+    "category": "Company",
+    "sender": "Security Bulletin",
+    "subject": "Atak hakerski na systemy Macrosoftu!",
+    "body": "Wirus 'Smażalnik' zablokował miliony inteligentnych lodówek napędzanych systemem Macrosoftu (MAC). Kurs pod presją.",
+    "targetType": "Company",
+    "targetTicker": "MAC",
+    "trendModifier": -0.014,
+    "durationHours": 54.0
+  },
+  {
+    "category": "Company",
+    "sender": "E-Commerce Today",
+    "subject": "AlleDrogo wprowadza opłatę za zalogowanie!",
+    "body": "AlleDrogo (ALG) wprowadza nową opłatę 'za utrzymanie sesji'. Użytkownicy są wściekli, ale przychody spółki gwałtownie rosną.",
+    "targetType": "Company",
+    "targetTicker": "ALG",
+    "trendModifier": 0.012,
+    "durationHours": 48.0
+  },
+  {
+    "category": "Company",
+    "sender": "Pudelek Biznes",
+    "subject": "Influencerzy masowo promują zegarki Roleksiorz!",
+    "body": "Spółka Roleksiorz (RLX) zalała polski TikTok reklamami 80 rat 0%. Sprzedaż zegarków dla klas średnich osiąga kosmos.",
+    "targetType": "Company",
+    "targetTicker": "RLX",
+    "trendModifier": 0.011,
+    "durationHours": 64.0
+  },
+
+  {
+    "category": "Private",
+    "sender": "Klinika Stomatologiczna",
+    "subject": "RACHUNEK: Leczenie kanałowe pod mikroskopem",
+    "body": "Podczas jedzenia twardego hot-doga złamałeś ząb. Wystawiono fakturę za nagłą wizytę w klinice na kwotę {AMOUNT} PLN.",
+    "amount": 1850.0,
+    "isBill": true
+  },
+  {
+    "category": "Private",
+    "sender": "Pogotowie Hydrauliczne",
+    "subject": "RACHUNEK: Awaria pękniętej rury w łazience",
+    "body": "W Twoim mieszkaniu doszło do zalania sąsiada z dołu. Koszt pilnej naprawy i osuszania wynosi {AMOUNT} PLN.",
+    "amount": 2300.0,
+    "isBill": true
+  },
+  {
+    "category": "Private",
+    "sender": "Główny Inspektorat Transportu",
+    "subject": "MANDAT: Przekroczenie prędkości z fotoradaru",
+    "body": "Zarejestrowano jazdę z prędkością 112 km/h w obszarze zabudowanym podczas spieszenia się do biura maklerskiego. Mandat: {AMOUNT} PLN.",
+    "amount": 1500.0,
+    "isBill": true
+  },
+  {
+    "category": "Private",
+    "sender": "Kancelaria Notarialna",
+    "subject": "Wypłata spadku po wujku z Ameryki",
+    "body": "Zakończono postępowanie spadkowe po Twoim dalekim wujku. Na konto przekazano kwotę {AMOUNT} PLN.",
+    "amount": 4500.0,
+    "isBill": false
+  },
+
+  {
+    "category": "TipOffer",
+    "sender": "Zwolniony Pracownik HR",
+    "subject": "PRZECIEK: Zwolnienia grupowe",
+    "body": "Mam dostęp do listy zwolnień w pewnej spółce. Chcesz wiedzieć co się tam wyrabia przed oficjalnym komunikatem? Koszt: {AMOUNT} PLN.",
+    "amount": 1800.0,
+    "targetType": "RandomCompany",
+    "trendModifier": -0.025,
+    "durationHours": 72.0,
+    "minDelayDays": 2,
+    "maxDelayDays": 3,
+    "tipDetailBody": "Informacja poufna: Spółka {COMPANY_NAME} zamierza za {DAYS} dni ogłosić zwolnienie 40% załogi i zamknięcie fabryki!",
+    "successBody": "KRYZYS: Spółka {COMPANY_NAME} oficjalnie potwierdza zwolnienia grupowe! Kurs zalicza potężne spadki.",
+    "failBody": "SPROSTOWANIE: Pogłoski o redukcji etatów w {COMPANY_NAME} okazały się mistyfikacją zgłoszoną przez bota."
+  },
+  {
+    "category": "TipOffer",
+    "sender": "Inżynier Badań i Rozwoju",
+    "subject": "TAJNE: Przełomowy patent",
+    "body": "Pracuję w dziale R&D pewnej spółki. Mamy coś, co zmieni branżę. Przekażę szczegóły za {AMOUNT} PLN.",
+    "amount": 3200.0,
+    "targetType": "RandomCompany",
+    "trendModifier": 0.028,
+    "durationHours": 96.0,
+    "minDelayDays": 3,
+    "maxDelayDays": 5,
+    "tipDetailBody": "Z laboratorium: Za {DAYS} dni spółka {COMPANY_NAME} ujawni przełomową technologię obniżającą koszty o połowę!",
+    "successBody": "REWOLUCJA: {COMPANY_NAME} prezentuje swój przełomowy patent! Inwestorzy masowo skupują akcje.",
+    "failBody": "DECYZJA: Testy w {COMPANY_NAME} zakończyły się fiaskiem. Projekt został odłożony na półkę."
+  },
+  {
+    "category": "TipOffer",
+    "sender": "Lobbysta Paliwowy",
+    "subject": "OFERTA: Decyzje strategiczne w sektorze Energy",
+    "body": "Posiadam projekt nowej ustawy zmieniającej podatki dla spółek energetycznych. Dostęp do treści: {AMOUNT} PLN.",
+    "amount": 4000.0,
+    "targetType": "Sector",
+    "targetSector": "Energy",
+    "trendModifier": 0.018,
+    "durationHours": 80.0,
+    "minDelayDays": 2,
+    "maxDelayDays": 4,
+    "tipDetailBody": "Szepty z wiejskiej: Za {DAYS} dni rząd ogłosi ulgi podatkowe i dopłaty dla całego sektora Energy!",
+    "successBody": "USTAVA PRZYJĘTA: Sektor Energy objęty zerowym podatkiem! Akcje firm energetycznych mocno w górę.",
+    "failBody": "ODRZUCENIE: Ustawa o ulgach dla sektora Energy została odrzucona w pierwszym czytaniu."
+  },
+  {
+    "category": "TipOffer",
+    "sender": "Brakujący Ogniwo z KNF",
+    "subject": "PRAWDA: Audyt finansowy",
+    "body": "Ustaliliśmy nieprawidłowości księgowe w wiodących spółkach handlowych. Przekażę raport za {AMOUNT} PLN.",
+    "amount": 2800.0,
+    "targetType": "Sector",
+    "targetSector": "Consumer",
+    "trendModifier": -0.018,
+    "durationHours": 72.0,
+    "minDelayDays": 2,
+    "maxDelayDays": 4,
+    "tipDetailBody": "Raport KNF: Za {DAYS} dni zostanie opublikowany miażdżący protokół z kontroli sektora Consumer!",
+    "successBody": "KONTROLA KNF: Wylano kubeł zimnej wody na sektor Consumer! Notowania do dołu.",
+    "failBody": "CZYSTO: KNF po ponownej weryfikacji nie dopatrzył się uchybień w sektorze Consumer."
   }
 ]

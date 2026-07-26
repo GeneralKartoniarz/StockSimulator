@@ -197,6 +197,37 @@ bool PlayingState::buyShares(int companyId, int quantity)
     pos.quantity += quantity;
     pos.avgBuyPrice = (previousTotalCost + stockCost) / pos.quantity;
 
+    auto itMarker = std::find_if(tradeMarkers.rbegin(), tradeMarkers.rend(),
+                                 [companyId, this](const TradeMarker &m)
+                                 {
+                                     return m.companyId == companyId && m.isBuy && std::abs(m.timeX - totalSimulatedHours) < 0.1;
+                                 });
+
+    if (itMarker != tradeMarkers.rend())
+    {
+        double totalOldCost = itMarker->quantity * itMarker->buyPrice;
+        double totalNewCost = quantity * it->currentPrice;
+        itMarker->quantity += quantity;
+        itMarker->buyPrice = (totalOldCost + totalNewCost) / itMarker->quantity;
+        itMarker->priceY = itMarker->buyPrice;
+    }
+    else
+    {
+        char dateBuf[64];
+        snprintf(dateBuf, sizeof(dateBuf), "R%d M%d D%02d", gameTime.year, gameTime.monthInQuarter, gameTime.day);
+
+        TradeMarker marker;
+        marker.companyId = companyId;
+        marker.timeX = totalSimulatedHours;
+        marker.priceY = it->currentPrice;
+        marker.quantity = quantity;
+        marker.buyPrice = it->currentPrice;
+        marker.dateStr = dateBuf;
+        marker.isBuy = true;
+
+        tradeMarkers.push_back(marker);
+    }
+
     return true;
 }
 
@@ -233,11 +264,41 @@ bool PlayingState::sellShares(int companyId, int quantity)
     bankBalance += netPayout;
     pos.quantity -= quantity;
 
+    auto itMarker = std::find_if(tradeMarkers.rbegin(), tradeMarkers.rend(),
+                                 [companyId, this](const TradeMarker &m)
+                                 {
+                                     return m.companyId == companyId && !m.isBuy && std::abs(m.timeX - totalSimulatedHours) < 0.1;
+                                 });
+
+    if (itMarker != tradeMarkers.rend())
+    {
+        double totalOldRevenue = itMarker->quantity * itMarker->buyPrice;
+        double totalNewRevenue = quantity * itComp->currentPrice;
+        itMarker->quantity += quantity;
+        itMarker->buyPrice = (totalOldRevenue + totalNewRevenue) / itMarker->quantity;
+        itMarker->priceY = itMarker->buyPrice;
+        itMarker->profitLoss += profitOnThisTrade;
+    }
+    else
+    {
+        char dateBuf[64];
+        snprintf(dateBuf, sizeof(dateBuf), "R%d M%d D%02d", gameTime.year, gameTime.monthInQuarter, gameTime.day);
+
+        TradeMarker marker;
+        marker.companyId = companyId;
+        marker.timeX = totalSimulatedHours;
+        marker.priceY = itComp->currentPrice;
+        marker.quantity = quantity;
+        marker.buyPrice = itComp->currentPrice;
+        marker.dateStr = dateBuf;
+        marker.isBuy = false;
+        marker.profitLoss = profitOnThisTrade;
+        tradeMarkers.push_back(marker);
+    }
     if (pos.quantity <= 0)
     {
         portfolio.erase(companyId);
     }
-
     return true;
 }
 
@@ -321,7 +382,7 @@ void PlayingState::update(sf::Time deltaTime)
             comm.currentPrice = std::max(0.01, comm.currentPrice * (1.0 + totalReturn));
             comm.priceHistory.push_back(comm.currentPrice);
 
-            if (comm.priceHistory.size() > 300)
+            if (comm.priceHistory.size() > MAX_HISTORY_SIZE)
             {
                 comm.priceHistory.erase(comm.priceHistory.begin());
             }
@@ -385,15 +446,21 @@ void PlayingState::update(sf::Time deltaTime)
             c.currentPrice = std::max(0.01, c.currentPrice * (1.0 + totalReturn));
             c.priceHistory.push_back(c.currentPrice);
 
-            if (c.priceHistory.size() > 300)
+            if (c.priceHistory.size() > MAX_HISTORY_SIZE)
             {
                 c.priceHistory.erase(c.priceHistory.begin());
             }
         }
 
-        if (timeHistory.size() > 300)
+        if (timeHistory.size() > MAX_HISTORY_SIZE)
         {
             timeHistory.erase(timeHistory.begin());
+        }
+        if (!timeHistory.empty())
+        {
+            double oldestVisibleTime = timeHistory.front();
+            std::erase_if(tradeMarkers, [oldestVisibleTime](const TradeMarker &marker)
+                          { return marker.timeX < oldestVisibleTime; });
         }
     }
 }
@@ -928,14 +995,12 @@ void PlayingState::renderImGui()
         ImGui::End();
     }
 
-    // --- WYKRESY ---
     if (showChartPanel)
     {
         ImGui::SetNextWindowPos(screenCenter, ImGuiCond_Appearing, pivotCenter);
         ImGui::SetNextWindowSize(ImVec2(850, 600), ImGuiCond_FirstUseEver);
         ImGui::Begin("Analiza Wykresowa", &showChartPanel);
 
-        // Panel filtrów po lewej stronie
         ImGui::BeginChild("PanelFiltrow", ImVec2(200, 0), true);
         ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.8f, 1.0f), "Porównanie Akcji");
         ImGui::Separator();
@@ -1067,6 +1132,74 @@ void PlayingState::renderImGui()
                 }
                 ImGui::EndTooltip();
             }
+            for (const auto &trade : tradeMarkers)
+            {
+                auto itComp = std::find_if(companies.begin(), companies.end(), [trade](const Company &c)
+                                           { return c.id == trade.companyId; });
+
+                if (itComp != companies.end() && itComp->showOnChart)
+                {
+                    ImVec2 mousePos = ImGui::GetMousePos();
+                    ImVec2 markerPix = ImPlot::PlotToPixels(ImPlotPoint(trade.timeX, trade.priceY));
+                    float dx = mousePos.x - markerPix.x;
+                    float dy = mousePos.y - markerPix.y;
+                    bool isHovered = ((dx * dx + dy * dy) <= 64.0f); 
+
+                    float currentMarkerSize = isHovered ? 8.0f : 4.0f;
+
+                    if (trade.isBuy)
+                    {
+                        ImPlot::SetNextMarkerStyle(
+                            ImPlotMarker_Circle,
+                            currentMarkerSize,
+                            ImVec4(0.2f, 1.0f, 0.2f, 0.9f),
+                            1.0f,
+                            ImVec4(0.0f, 0.8f, 0.0f, 1.0f));
+                    }
+                    else
+                    {
+                        ImPlot::SetNextMarkerStyle(
+                            ImPlotMarker_Circle,
+                            currentMarkerSize,
+                            ImVec4(1.0f, 0.3f, 0.3f, 0.9f),
+                            1.0f,
+                            ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
+                    }
+                    std::string labelPrefix = trade.isBuy ? "##buy_" : "##sell_";
+                    std::string markerLabel = labelPrefix + std::to_string(trade.companyId) + "_" + std::to_string(trade.timeX);
+                    ImPlot::PlotScatter(markerLabel.c_str(), &trade.timeX, &trade.priceY, 1);
+                    if (isHovered)
+                    {
+                        ImGui::BeginTooltip();
+                        if (trade.isBuy)
+                        {
+                            ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "[ KUPNO: %s ]", itComp->ticker.c_str());
+                            ImGui::Separator();
+                            ImGui::Text("Ilość: %d szt.", trade.quantity);
+                            ImGui::Text("Średnia cena zakupu: %.2f PLN", trade.buyPrice);
+                            ImGui::Text("Data transakcji: %s", trade.dateStr.c_str());
+                        }
+                        else
+                        {
+                            ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "[ SPRZEDAŻ: %s ]", itComp->ticker.c_str());
+                            ImGui::Separator();
+                            ImGui::Text("Ilość: %d szt.", trade.quantity);
+                            ImGui::Text("Średnia cena sprzedaży: %.2f PLN", trade.buyPrice);
+
+                            if (trade.profitLoss >= 0.0)
+                            {
+                                ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "Wynik: +%.2f PLN (ZYSK)", trade.profitLoss);
+                            }
+                            else
+                            {
+                                ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "Wynik: %.2f PLN (STRATA)", trade.profitLoss);
+                            }
+                            ImGui::Text("Data transakcji: %s", trade.dateStr.c_str());
+                        }
+                        ImGui::EndTooltip();
+                    }
+                }
+            }
 
             ImPlot::EndPlot();
         }
@@ -1186,7 +1319,6 @@ void PlayingState::renderImGui()
         ImGui::End();
     }
 
-    // --- SZCZEGÓŁY ANALIZY I SZYBKI HANDEL ---
     if (showDetailsPanel)
     {
         ImGui::SetNextWindowPos(screenCenter, ImGuiCond_Appearing, pivotCenter);
@@ -1251,7 +1383,6 @@ void PlayingState::renderImGui()
                 ImGui::Separator();
                 ImGui::Spacing();
 
-                // PRZYCISK KUP
                 bool canAfford = (bankBalance >= totalCost);
                 if (!canAfford)
                     ImGui::BeginDisabled();
@@ -1270,7 +1401,6 @@ void PlayingState::renderImGui()
                     }
                 }
 
-                // PRZYCISKI SPRZEDAŻY
                 if (ownedShares > 0)
                 {
                     ImGui::SameLine();
