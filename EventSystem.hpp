@@ -44,6 +44,8 @@ struct EventTemplate
 
     int minDelayDays = 1;
     int maxDelayDays = 3;
+    
+    std::string tipDetailBody; 
     std::string successBody;
     std::string failBody;
 };
@@ -52,7 +54,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(
     EventTemplate,
     category, sender, subject, body, targetType, targetSector,
     targetTicker, targetSymbol, trendModifier, durationHours, amount, isBill,
-    minDelayDays, maxDelayDays, successBody, failBody
+    minDelayDays, maxDelayDays, tipDetailBody, successBody, failBody
 )
 
 struct ActiveMarketEffect

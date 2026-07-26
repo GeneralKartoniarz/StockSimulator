@@ -61,7 +61,31 @@ PlayingState::PlayingState(Game *game) : GameState(game)
     for (auto &c : commodities)
         c.priceHistory.push_back(c.currentPrice);
 
-    lastRecordedDay = gameTime.day;
+    lastRecordedDay = 0;
+    MailMessage welcomeMail;
+    welcomeMail.id = nextMailId++;
+    welcomeMail.type = MailType::News;
+    welcomeMail.sender = "Dom Maklerski";
+    welcomeMail.subject = "Witamy na giełdzie! Twój rachunek jest aktywny.";
+    welcomeMail.timestamp = "R1 M1 D01";
+    welcomeMail.body = "Szanowny Inwestorze,\n\n"
+                       "Konto inwestycyjne zostało pomyślnie aktywowane z kapitałem 10 000 PLN.\n"
+                       "W tej skrzynce będziesz otrzymywać codzienne wiadomości rynkowe, faktury, "
+                       "ostrzeżenia komornicze oraz płatne oferty przecieków giełdowych.\n\nPowodzenia!";
+    inbox.push_back(welcomeMail);
+
+    MailMessage startBill;
+    startBill.id = nextMailId++;
+    startBill.type = MailType::Bill;
+    startBill.sender = "Giełda Narodowa w Warszawie";
+    startBill.subject = "RACHUNEK: Opłata aktywacyjna lokalu";
+    startBill.timestamp = "R1 M1 D01";
+    startBill.amount = 350.0;
+    startBill.isNew = true;
+    startBill.body = "Przesyłamy jednorazową opłatę aktywacyjną za media w Twoim biurze inwestycyjnym.";
+    inbox.push_back(startBill);
+
+    selectedMailId = welcomeMail.id;
 }
 
 void PlayingState::generateStartingCompanies()
@@ -228,11 +252,38 @@ void PlayingState::update(sf::Time deltaTime)
         timeHistory.push_back(totalSimulatedHours);
 
         eventSystem.update(0.25);
+
         if (gameTime.day != lastRecordedDay)
         {
             lastRecordedDay = gameTime.day;
             daysPassedCounter++;
             stats.daysSurvived++;
+
+            char timeBuffer[64];
+            snprintf(timeBuffer, sizeof(timeBuffer), "R%d M%d D%02d", gameTime.year, gameTime.monthInQuarter, gameTime.day);
+
+            if (gameTime.day == 1)
+            {
+                bankSystem.updateMacroeconomy(inbox, nextMailId, timeBuffer);
+            }
+
+            eventSystem.processPendingEvents(inbox, nextMailId, timeBuffer);
+
+            eventSystem.checkAndTriggerRandomEvent(companies, commodities, bankBalance, inbox, nextMailId, timeBuffer);
+
+            if (daysPassedCounter >= 7)
+            {
+                daysPassedCounter = 0;
+
+                bankSystem.processWeeklyInterest(bankBalance, inbox, nextMailId, timeBuffer);
+
+                eventSystem.generateWeeklyLivingBill(calculateNetWorth(), inbox, nextMailId, timeBuffer);
+
+                if (!eventSystem.processUnpaidBills(bankBalance, inbox, nextMailId, timeBuffer, game))
+                {
+                    return;
+                }
+            }
 
             double currentNetWorth = calculateNetWorth();
             if (currentNetWorth > stats.maxNetWorth)
@@ -461,6 +512,8 @@ void PlayingState::renderMailPanel()
                 label = "[NOWA] " + label;
             if (mail.type == MailType::Bill && !mail.isResolved)
                 label += " (!)";
+            if (mail.type == MailType::TipOffer && !mail.isResolved)
+                label += " ($)";
 
             bool isSelected = (selectedMailId.has_value() && selectedMailId.value() == mail.id);
             if (ImGui::Selectable(label.c_str(), isSelected))
@@ -526,6 +579,36 @@ void PlayingState::renderMailPanel()
                     else
                     {
                         ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "[ V ] RACHUNEK ZAZNACZONY JAKO OPŁACONY");
+                    }
+                }
+                else if (mail.type == MailType::TipOffer)
+                {
+                    if (!mail.isResolved)
+                    {
+                        ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "Koszt informacji: %.2f PLN", mail.amount);
+                        ImGui::Spacing();
+
+                        bool canAfford = (bankBalance >= mail.amount);
+                        if (!canAfford)
+                            ImGui::BeginDisabled();
+
+                        char timeBuffer[64];
+                        snprintf(timeBuffer, sizeof(timeBuffer), "R%d M%d D%02d", gameTime.year, gameTime.monthInQuarter, gameTime.day);
+
+                        if (ImGui::Button("KUP INFORMACJĘ", ImVec2(200, 32)))
+                        {
+                            eventSystem.buyTip(mail.id, bankBalance, inbox, nextMailId, timeBuffer, companies);
+                        }
+
+                        if (!canAfford)
+                        {
+                            ImGui::EndDisabled();
+                            ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "Brak środków na koncie!");
+                        }
+                    }
+                    else
+                    {
+                        ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "[ V ] INFORMACJA ZAKUPIONA");
                     }
                 }
 
@@ -872,13 +955,11 @@ void PlayingState::renderImGui()
 
         ImGui::SameLine();
 
-        // Obszar Wykresu i Paski Handlowe po prawej stronie
         ImGui::BeginChild("ObszarWykresu", ImVec2(0, 0), false);
 
         ImGui::Checkbox("Śledź aktualny kurs (Okno 20h)", &autoScrollX);
         ImGui::Spacing();
 
-        // Ustalamy stałą wysokość wykresu (320px), aby pod spodem było miejsce na handel
         if (ImPlot::BeginPlot("Notowania Historyczne", ImVec2(-1, 320)))
         {
             ImPlot::SetupAxis(ImAxis_X1, "Czas (Godziny)", ImPlotAxisFlags_None);
@@ -1189,7 +1270,7 @@ void PlayingState::renderImGui()
                     }
                 }
 
-                // PRZYCISKI SPRZEDAŻY (Pojawiają się tylko jeśli gracz posiada akcje firmy)
+                // PRZYCISKI SPRZEDAŻY
                 if (ownedShares > 0)
                 {
                     ImGui::SameLine();
@@ -1238,4 +1319,5 @@ void PlayingState::renderImGui()
 
         ImGui::End();
     }
+    renderVictoryModal();
 }

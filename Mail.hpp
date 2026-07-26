@@ -5,9 +5,9 @@
 enum class MailType
 {
     Bill,    // Rachunek do zapłaty
-    Event,   // Wydarzenie osobiste (np. stłuczka)
+    Event,   // Wydarzenie osobiste
     News,    // Wiadomości rynkowe
-    TipOffer // Oferta zakupu przecieku / informacji insidera
+    TipOffer // Oferta zakupu przecieku
 };
 
 struct MailMessage
@@ -24,12 +24,14 @@ struct MailMessage
     int unpaidWeeks = 0;
     int parentBillId = 0;
     bool isNew = true;
+    
     int tipDelayDays = 0;
     double tipTrendModifier = 0.0;
     double tipDurationHours = 0.0;
 
     std::string tipSubject;
     std::string tipBody;
+    std::string tipDetailBody; 
     std::string tipSuccessBody;
     std::string tipFailBody;
 

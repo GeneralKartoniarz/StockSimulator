@@ -343,17 +343,20 @@ void EventSystem::checkAndTriggerRandomEvent(std::vector<Company> &companies, st
     std::uniform_real_distribution<double> chance(0.0, 1.0);
     if (chance(rng) < 0.25)
     {
-        std::uniform_int_distribution<int> catDist(0, 2);
+        std::uniform_int_distribution<int> catDist(0, 3);
         int cat = catDist(rng);
 
         if (cat == 0)
             triggerGlobalEvent(commodities, companies, inbox, nextMailId, timestamp);
         else if (cat == 1)
             triggerCompanyEvent(companies, inbox, nextMailId, timestamp);
-        else
+        else if (cat == 2)
             triggerPrivateEvent(bankBalance, inbox, nextMailId, timestamp);
+        else
+            triggerTipOfferEvent(companies, commodities, inbox, nextMailId, timestamp);
     }
 }
+
 void EventSystem::triggerTipOfferEvent(std::vector<Company> &companies, std::vector<Commodity> &commodities, std::vector<MailMessage> &inbox, int &nextMailId, const std::string &timestamp)
 {
     std::vector<EventTemplate> matches;
@@ -380,9 +383,14 @@ void EventSystem::triggerTipOfferEvent(std::vector<Company> &companies, std::vec
     mail.timestamp = timestamp;
 
     std::string body = tmpl.body;
-    replaceAll(body, "{AMOUNT}", std::to_string((int)tmpl.amount));
-    mail.body = body;
+    std::string detailBody = tmpl.tipDetailBody;
+    std::string succBody = tmpl.successBody;
+    std::string failBody = tmpl.failBody;
 
+    replaceAll(body, "{AMOUNT}", std::to_string((int)tmpl.amount));
+    replaceAll(detailBody, "{DAYS}", std::to_string(delayDays));
+
+    mail.body = body;
     mail.tipTrendModifier = tmpl.trendModifier;
     mail.tipDurationHours = tmpl.durationHours;
     mail.tipDelayDays = delayDays;
@@ -392,17 +400,24 @@ void EventSystem::triggerTipOfferEvent(std::vector<Company> &companies, std::vec
         std::uniform_int_distribution<size_t> cDist(0, companies.size() - 1);
         const auto &targetComp = companies[cDist(rng)];
 
-        std::string succBody = tmpl.successBody;
-        std::string failBody = tmpl.failBody;
+        replaceAll(detailBody, "{COMPANY_NAME}", targetComp.name);
         replaceAll(succBody, "{COMPANY_NAME}", targetComp.name);
         replaceAll(failBody, "{COMPANY_NAME}", targetComp.name);
 
         mail.tipIsCompany = true;
         mail.tipTargetId = targetComp.id;
         mail.tipSubject = targetComp.name;
-        mail.tipSuccessBody = succBody;
-        mail.tipFailBody = failBody;
     }
+    else if (tmpl.targetType == "Sector")
+    {
+        mail.tipIsSector = true;
+        mail.tipTargetSector = tmpl.targetSector;
+        mail.tipSubject = "Sektor Tech";
+    }
+
+    mail.tipDetailBody = detailBody;
+    mail.tipSuccessBody = succBody;
+    mail.tipFailBody = failBody;
 
     inbox.push_back(mail);
 }
@@ -425,8 +440,8 @@ bool EventSystem::buyTip(int mailId, double &bankBalance, std::vector<MailMessag
         PendingEvent pending;
         pending.daysRemaining = it->tipDelayDays;
         pending.isTrue = isTrue;
-        pending.sender = it->sender;
-        pending.subject = "WYNIK PRZECIEKU: " + it->tipSubject;
+        pending.sender = "Giełdowe Wiadomości";
+        pending.subject = "KOMUNIKAT: " + it->tipSubject;
         pending.successBody = it->tipSuccessBody;
         pending.failBody = it->tipFailBody;
 
@@ -447,17 +462,15 @@ bool EventSystem::buyTip(int mailId, double &bankBalance, std::vector<MailMessag
 
         pendingEvents.push_back(pending);
 
-        MailMessage ackMail;
-        ackMail.id = nextMailId++;
-        ackMail.type = MailType::News;
-        ackMail.sender = it->sender;
-        ackMail.subject = "TRANSAKCJA PRZYJĘTA: " + it->tipSubject;
-        ackMail.timestamp = timestamp;
-        ackMail.body = "Otrzymano wpłatę. Informacja została przekazana do weryfikacji.\n"
-                       "Oczekuj raportu w skrzynce za około " +
-                       std::to_string(it->tipDelayDays) + " dni.";
+        MailMessage detailMail;
+        detailMail.id = nextMailId++;
+        detailMail.type = MailType::News;
+        detailMail.sender = it->sender;
+        detailMail.subject = "PRZECIEK: " + it->tipSubject;
+        detailMail.timestamp = timestamp;
+        detailMail.body = it->tipDetailBody;
 
-        inbox.push_back(ackMail);
+        inbox.push_back(detailMail);
         return true;
     }
     return false;
@@ -482,13 +495,17 @@ void EventSystem::processPendingEvents(std::vector<MailMessage> &inbox, int &nex
             {
                 activeEffects.push_back(it->effect);
                 resultMail.body = it->successBody;
+                inbox.push_back(resultMail);
             }
             else
             {
-                resultMail.body = it->failBody;
+                if (!it->failBody.empty())
+                {
+                    resultMail.body = it->failBody;
+                    inbox.push_back(resultMail);
+                }
             }
 
-            inbox.push_back(resultMail);
             it = pendingEvents.erase(it);
         }
         else

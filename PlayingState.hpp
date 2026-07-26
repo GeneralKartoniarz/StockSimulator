@@ -54,7 +54,7 @@ private:
     std::optional<int> selectedMailId;
     int nextMailId = 1;
     int daysPassedCounter = 0;
-    int lastRecordedDay = 1;
+    int lastRecordedDay = 0;
 
     EventSystem eventSystem;
 
@@ -81,7 +81,7 @@ private:
     RunStats stats;
     bool isFreeplay = false;
     bool showVictoryModal = false;
-    
+
     double getQuarterlyQuota(int year, int quarter) const
     {
         if (year > 1)
