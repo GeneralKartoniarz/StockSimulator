@@ -20,7 +20,17 @@ struct GameTime
     float accumulator = 0.0f;
     bool update(float dt);
 };
-
+struct RunStats
+{
+    int daysSurvived = 0;
+    double maxNetWorth = 10000.0;
+    double maxSingleProfit = 0.0;
+    double totalFeesPaid = 0.0;
+    double totalInterestPaid = 0.0;
+    int totalTrades = 0;
+    bool isVictory = false;
+    std::string endReason = "";
+};
 struct PortfolioPosition
 {
     int companyId = 0;
@@ -34,7 +44,7 @@ private:
     std::vector<Company> companies;
     std::vector<Commodity> commodities;
     std::optional<int> selectedCompanyId;
-    
+
     double bankBalance = 10000.00;
     double suckersFeeRate = 0.02;
     std::unordered_map<int, PortfolioPosition> portfolio;
@@ -66,8 +76,33 @@ private:
 
     BankSystem bankSystem;
     bool showBankPanel = false;
-    double loanAmountInput = 3000.0; 
+    double loanAmountInput = 3000.0;
 
+    RunStats stats;
+    bool isFreeplay = false;
+    bool showVictoryModal = false;
+    
+    double getQuarterlyQuota(int year, int quarter) const
+    {
+        if (year > 1)
+            return 1000000.0;
+        switch (quarter)
+        {
+        case 1:
+            return 15000.0;
+        case 2:
+            return 50000.0;
+        case 3:
+            return 150000.0;
+        case 4:
+            return 1000000.0;
+        default:
+            return 1000000.0;
+        }
+    }
+
+    void checkQuarterlyQuota();
+    void renderVictoryModal();
     void renderBankPanel();
 
     void generateStartingCompanies();
@@ -83,10 +118,10 @@ private:
     bool sellShares(int companyId, int quantity);
 
 public:
-    PlayingState(Game* game);
+    PlayingState(Game *game);
 
-    void handleEvent(const sf::Event& event) override;
+    void handleEvent(const sf::Event &event) override;
     void update(sf::Time deltaTime) override;
-    void render(sf::RenderWindow& window) override;
+    void render(sf::RenderWindow &window) override;
     void renderImGui() override;
 };

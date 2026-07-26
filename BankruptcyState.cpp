@@ -2,20 +2,20 @@
 #include "MainMenuState.hpp"
 #include "Game.hpp"
 #include "imgui.h"
-#include <algorithm>
 #include <filesystem>
 #include <iostream>
 
-BankruptcyState::BankruptcyState(Game* game) 
-    : GameState(game)
+BankruptcyState::BankruptcyState(Game* game, const RunStats& stats) 
+    : GameState(game), finalStats(stats)
 {
-    std::string soundPath = std::filesystem::absolute("assets/gunshot.wav").generic_string();
-    if (gunshotBuffer.loadFromFile(soundPath)) {
-        gunshotSound.emplace(gunshotBuffer);
-        gunshotSound->setVolume(100.0f);
-        gunshotSound->play();
-    } else {
-        std::cerr << "[OSTRZEZENIE] Nie znaleziono pliku dzwieku: " << soundPath << "\n";
+    if (!finalStats.isVictory)
+    {
+        std::string soundPath = std::filesystem::absolute("assets/gunshot.wav").generic_string();
+        if (soundBuffer.loadFromFile(soundPath)) {
+            sound.emplace(soundBuffer);
+            sound->setVolume(100.0f);
+            sound->play();
+        }
     }
 }
 
@@ -25,47 +25,68 @@ void BankruptcyState::handleEvent(const sf::Event& event) {
     }
 }
 
-void BankruptcyState::update(sf::Time deltaTime) {
-    displayTimer += deltaTime.asSeconds();
-    if (displayTimer >= totalDuration) {
-        game->changeState(std::make_unique<MainMenuState>(game));
-    }
-}
+void BankruptcyState::update(sf::Time deltaTime) {}
 
 void BankruptcyState::render(sf::RenderWindow& window) {
-    window.clear(sf::Color(10, 10, 10));
+    if (finalStats.isVictory)
+        window.clear(sf::Color(10, 30, 10));
+    else
+        window.clear(sf::Color(20, 5, 5));   
 }
 
 void BankruptcyState::renderImGui() {
-    float alphaRatio = 1.0f - (displayTimer / (totalDuration - 0.5f));
-    alphaRatio = std::clamp(alphaRatio, 0.0f, 1.0f);
-
     ImGuiIO& io = ImGui::GetIO();
     ImFont* largeFont = (io.Fonts->Fonts.Size > 1) ? io.Fonts->Fonts[1] : nullptr;
 
     ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    ImGui::SetNextWindowSize(ImVec2(550, 480));
 
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration |
-                             ImGuiWindowFlags_AlwaysAutoResize |
                              ImGuiWindowFlags_NoSavedSettings |
-                             ImGuiWindowFlags_NoFocusOnAppearing |
-                             ImGuiWindowFlags_NoNav |
-                             ImGuiWindowFlags_NoMove |
-                             ImGuiWindowFlags_NoInputs |
-                             ImGuiWindowFlags_NoBackground;
+                             ImGuiWindowFlags_NoMove;
 
-    ImGui::Begin("BankruptcyWindow", nullptr, flags);
+    ImGui::Begin("SummaryWindow", nullptr, flags);
 
     if (largeFont) ImGui::PushFont(largeFont);
 
-    ImGui::TextColored(ImVec4(0.85f, 0.10f, 0.10f, alphaRatio), "BANKRUT");
+    if (finalStats.isVictory)
+        ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "ZWYCIĘSTWO!");
+    else
+        ImGui::TextColored(ImVec4(0.9f, 0.1f, 0.1f, 1.0f), "BANKRUT!");
 
     if (largeFont) ImGui::PopFont();
 
-    ImGui::End();
+    ImGui::Separator();
+    ImGui::Spacing();
 
-    ImGui::PopStyleVar(2);
+    ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.0f), "Powód: %s", finalStats.endReason.c_str());
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    ImGui::TextColored(ImVec4(0.0f, 0.9f, 1.0f, 1.0f), "PODSUMOWANIE STATYSTYK RUNU:");
+    ImGui::Spacing();
+
+    ImGui::Text("Przeżyte dni: %d", finalStats.daysSurvived);
+    ImGui::Text("Maksymalny osiągnięty majątek: %.2f PLN", finalStats.maxNetWorth);
+    ImGui::Text("Najlepsza pojedyncza transakcja: +%.2f PLN", finalStats.maxSingleProfit);
+    ImGui::Text("Liczba wykonanych transakcji: %d", finalStats.totalTrades);
+    ImGui::Text("Łącznie zapłacone prowizje: %.2f PLN", finalStats.totalFeesPaid);
+
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    std::string rank = "Płotką Giełdową";
+    if (finalStats.maxNetWorth > 1000000.0) rank = "Prawdziwym Wilkiem z Wall Street";
+    else if (finalStats.maxNetWorth > 250000.0) rank = "Inwestorem Wyższej Rangi";
+    else if (finalStats.maxNetWorth > 50000.0) rank = "Młodym Wilczkiem";
+
+    ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "Zostałeś: %s", rank.c_str());
+
+    ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Kliknij dowolny klawisz, aby wrócić do Menu...");
+
+    ImGui::End();
 }

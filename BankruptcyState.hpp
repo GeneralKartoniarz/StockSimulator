@@ -1,21 +1,21 @@
 #pragma once
 #include "GameState.hpp"
+#include "PlayingState.hpp"
 #include <SFML/Audio.hpp>
 #include <optional>
 
-class BankruptcyState : public GameState {
+class BankruptcyState : public GameState
+{
 private:
-    sf::SoundBuffer gunshotBuffer;
-    std::optional<sf::Sound> gunshotSound;
+    sf::SoundBuffer soundBuffer;
+    std::optional<sf::Sound> sound;
 
-    float displayTimer = 0.0f;
-    const float totalDuration = 4.0f;
+    RunStats finalStats;
 
 public:
-    BankruptcyState(Game* game);
-
-    void handleEvent(const sf::Event& event) override;
+    BankruptcyState(Game *game, const RunStats &stats = RunStats{});
+    void handleEvent(const sf::Event &event) override;
     void update(sf::Time deltaTime) override;
-    void render(sf::RenderWindow& window) override;
+    void render(sf::RenderWindow &window) override;
     void renderImGui() override;
 };

@@ -163,6 +163,9 @@ bool PlayingState::buyShares(int companyId, int quantity)
 
     bankBalance -= totalCost;
 
+    stats.totalFeesPaid += fee;
+    stats.totalTrades++;
+
     auto &pos = portfolio[companyId];
     pos.companyId = companyId;
 
@@ -195,6 +198,14 @@ bool PlayingState::sellShares(int companyId, int quantity)
     double fee = grossPayout * suckersFeeRate;
     double netPayout = grossPayout - fee;
 
+    double profitOnThisTrade = (itComp->currentPrice - pos.avgBuyPrice) * quantity - fee;
+    if (profitOnThisTrade > stats.maxSingleProfit)
+    {
+        stats.maxSingleProfit = profitOnThisTrade;
+    }
+    stats.totalFeesPaid += fee;
+    stats.totalTrades++;
+
     bankBalance += netPayout;
     pos.quantity -= quantity;
 
@@ -221,28 +232,27 @@ void PlayingState::update(sf::Time deltaTime)
         {
             lastRecordedDay = gameTime.day;
             daysPassedCounter++;
+            stats.daysSurvived++;
 
-            char timeBuffer[64];
-            snprintf(timeBuffer, sizeof(timeBuffer), "R%d M%d D%02d", gameTime.year, gameTime.monthInQuarter, gameTime.day);
-
-            if (gameTime.day == 1)
+            double currentNetWorth = calculateNetWorth();
+            if (currentNetWorth > stats.maxNetWorth)
             {
-                bankSystem.updateMacroeconomy(inbox, nextMailId, timeBuffer);
+                stats.maxNetWorth = currentNetWorth;
             }
-            eventSystem.processPendingEvents(inbox, nextMailId, timeBuffer);
 
-            eventSystem.checkAndTriggerRandomEvent(companies, commodities, bankBalance, inbox, nextMailId, timeBuffer);
-
-            if (daysPassedCounter >= 7)
+            if (!isFreeplay && currentNetWorth >= 1000000.0 && !showVictoryModal)
             {
-                daysPassedCounter = 0;
+                showVictoryModal = true;
+            }
 
-                bankSystem.processWeeklyInterest(bankBalance, inbox, nextMailId, timeBuffer);
-
-                eventSystem.generateWeeklyLivingBill(calculateNetWorth(), inbox, nextMailId, timeBuffer);
-
-                if (!eventSystem.processUnpaidBills(bankBalance, inbox, nextMailId, timeBuffer, game))
+            if (!isFreeplay && gameTime.day == 30 && gameTime.monthInQuarter == 3)
+            {
+                double requiredQuota = getQuarterlyQuota(gameTime.year, gameTime.quarter);
+                if (currentNetWorth < requiredQuota)
                 {
+                    stats.isVictory = false;
+                    stats.endReason = "Niewykonanie celu kwartalnego (" + std::to_string((int)requiredQuota) + " PLN)";
+                    game->changeState(std::make_unique<BankruptcyState>(game, stats));
                     return;
                 }
             }
@@ -356,10 +366,58 @@ void PlayingState::renderClock()
     ImGui::Spacing();
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Godzina: %02d:%02d", gameTime.hour, gameTime.minute);
     ImGui::ProgressBar(gameTime.accumulator / 0.75f, ImVec2(180.0f, 0.0f), "");
-
+    ImGui::Spacing();
+    ImGui::Separator();
+    if (!isFreeplay)
+    {
+        double target = getQuarterlyQuota(gameTime.year, gameTime.quarter);
+        ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "CEL Q%d: %.0f PLN", gameTime.quarter, target);
+        ImGui::ProgressBar(calculateNetWorth() / target, ImVec2(180.0f, 0.0f));
+    }
+    else
+    {
+        ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "[ TRYB FREEPLAY ]");
+    }
     ImGui::End();
 }
+void PlayingState::renderVictoryModal()
+{
+    if (!showVictoryModal)
+        return;
 
+    ImGui::OpenPopup("ZWYCIĘSTWO!");
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(450, 250));
+
+    if (ImGui::BeginPopupModal("ZWYCIĘSTWO!", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "GRATULACJE! ZGROMADZIŁEŚ 1 000 000 PLN!");
+        ImGui::Separator();
+        ImGui::Spacing();
+        ImGui::TextWrapped("Stałeś się legendą Wall Street!");
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (ImGui::Button("PRZEJDŹ DO FREEPLAY", ImVec2(180, 35)))
+        {
+            isFreeplay = true;
+            showVictoryModal = false;
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("ZAKOŃCZ", ImVec2(180, 35)))
+        {
+            stats.isVictory = true;
+            stats.endReason = "Osiągnięto status Milionera!";
+            game->changeState(std::make_unique<BankruptcyState>(game, stats));
+        }
+
+        ImGui::EndPopup();
+    }
+}
 void PlayingState::renderMailPanel()
 {
     int unreadCount = 0;
@@ -703,7 +761,9 @@ void PlayingState::renderImGui()
 
     if (ImGui::Button("Zbankrutuj", ImVec2(-1, 30)))
     {
-        game->changeState(std::make_unique<BankruptcyState>(game));
+        stats.isVictory = false;
+        stats.endReason = "Ogłoszono upadłość na własne życzenie.";
+        game->changeState(std::make_unique<BankruptcyState>(game, stats));
     }
     ImGui::End();
 
@@ -936,7 +996,7 @@ void PlayingState::renderImGui()
         ImGui::Spacing();
 
         bool anyCompanySelected = false;
-        static std::map<int, int> chartTradeQuantities; 
+        static std::map<int, int> chartTradeQuantities;
 
         for (auto &company : companies)
         {
@@ -965,7 +1025,8 @@ void PlayingState::renderImGui()
                 ImGui::PushItemWidth(100);
                 ImGui::InputInt("Ilość", &qty);
                 ImGui::PopItemWidth();
-                if (qty < 1) qty = 1;
+                if (qty < 1)
+                    qty = 1;
 
                 double stockCost = company.currentPrice * qty;
                 double totalBuyCost = stockCost * (1.0 + suckersFeeRate);
@@ -974,14 +1035,16 @@ void PlayingState::renderImGui()
                 ImGui::SameLine();
 
                 bool canBuy = (bankBalance >= totalBuyCost);
-                if (!canBuy) ImGui::BeginDisabled();
+                if (!canBuy)
+                    ImGui::BeginDisabled();
 
                 if (ImGui::Button("KUP", ImVec2(75, 0)))
                 {
                     buyShares(company.id, qty);
                 }
 
-                if (!canBuy) ImGui::EndDisabled();
+                if (!canBuy)
+                    ImGui::EndDisabled();
 
                 if (ImGui::IsItemHovered())
                 {
@@ -993,14 +1056,16 @@ void PlayingState::renderImGui()
                     ImGui::SameLine();
 
                     bool canSell = (ownedShares >= qty);
-                    if (!canSell) ImGui::BeginDisabled();
+                    if (!canSell)
+                        ImGui::BeginDisabled();
 
                     if (ImGui::Button("SPRZEDAJ", ImVec2(80, 0)))
                     {
                         sellShares(company.id, std::min(qty, ownedShares));
                     }
 
-                    if (!canSell) ImGui::EndDisabled();
+                    if (!canSell)
+                        ImGui::EndDisabled();
 
                     if (ImGui::IsItemHovered())
                     {
@@ -1089,7 +1154,8 @@ void PlayingState::renderImGui()
                 ImGui::PushItemWidth(120);
                 ImGui::InputInt("Ilość akcji", &tradeQuantity);
                 ImGui::PopItemWidth();
-                if (tradeQuantity < 1) tradeQuantity = 1;
+                if (tradeQuantity < 1)
+                    tradeQuantity = 1;
 
                 double stockCost = selected->currentPrice * tradeQuantity;
                 double fee = stockCost * suckersFeeRate;
@@ -1106,7 +1172,8 @@ void PlayingState::renderImGui()
 
                 // PRZYCISK KUP
                 bool canAfford = (bankBalance >= totalCost);
-                if (!canAfford) ImGui::BeginDisabled();
+                if (!canAfford)
+                    ImGui::BeginDisabled();
 
                 if (ImGui::Button("KUP", ImVec2(100, 32)))
                 {
@@ -1128,14 +1195,16 @@ void PlayingState::renderImGui()
                     ImGui::SameLine();
 
                     bool canSell = (ownedShares >= tradeQuantity);
-                    if (!canSell) ImGui::BeginDisabled();
+                    if (!canSell)
+                        ImGui::BeginDisabled();
 
                     if (ImGui::Button("SPRZEDAJ", ImVec2(100, 32)))
                     {
                         sellShares(selected->id, std::min(tradeQuantity, ownedShares));
                     }
 
-                    if (!canSell) ImGui::EndDisabled();
+                    if (!canSell)
+                        ImGui::EndDisabled();
 
                     if (ImGui::IsItemHovered())
                     {
