@@ -1541,7 +1541,7 @@ void PlayingState::renderImGui()
 
             for (const auto &company : companies)
             {
-                if (company.showOnChart && timeHistory.size() > 0)
+                if (company.showOnChart && !timeHistory.empty())
                 {
                     ImPlot::PlotLine(company.ticker.c_str(), timeHistory.data(), company.priceHistory.data(), (int)timeHistory.size());
 
@@ -1562,7 +1562,7 @@ void PlayingState::renderImGui()
 
             for (const auto &comm : commodities)
             {
-                if (comm.showOnChart && timeHistory.size() > 0)
+                if (comm.showOnChart && !timeHistory.empty())
                 {
                     ImPlot::PlotLine(comm.symbol.c_str(), timeHistory.data(), comm.priceHistory.data(), (int)timeHistory.size());
 
@@ -1657,7 +1657,7 @@ void PlayingState::renderImGui()
                     }
                 }
             }
-            ImPlot::EndPlot();
+            ImPlot::EndPlot(); 
         }
 
         ImGui::Spacing();
@@ -1667,6 +1667,8 @@ void PlayingState::renderImGui()
 
         bool anyCompanySelected = false;
         static std::map<int, int> chartTradeQuantities;
+        static std::map<int, double> chartOrderTargetPrices;
+        static std::map<int, int> chartOrderTypeIdx;
 
         for (auto &company : companies)
         {
@@ -1678,7 +1680,12 @@ void PlayingState::renderImGui()
                 if (chartTradeQuantities.find(company.id) == chartTradeQuantities.end())
                     chartTradeQuantities[company.id] = 1;
 
+                if (chartOrderTargetPrices.find(company.id) == chartOrderTargetPrices.end() || chartOrderTargetPrices[company.id] <= 0.0)
+                    chartOrderTargetPrices[company.id] = company.currentPrice;
+
                 int &qty = chartTradeQuantities[company.id];
+                double &targetPrice = chartOrderTargetPrices[company.id];
+                int &orderType = chartOrderTypeIdx[company.id];
 
                 int ownedShares = 0;
                 auto itPos = portfolio.find(company.id);
@@ -1689,7 +1696,7 @@ void PlayingState::renderImGui()
                 ImGui::SameLine();
                 ImGui::Text("Kurs: %.2f PLN | Posiadasz: %d szt.", company.currentPrice, ownedShares);
 
-                ImGui::PushItemWidth(100);
+                ImGui::PushItemWidth(90);
                 ImGui::InputInt("Ilość", &qty);
                 ImGui::PopItemWidth();
                 if (qty < 1)
@@ -1697,7 +1704,6 @@ void PlayingState::renderImGui()
 
                 double stockCost = company.currentPrice * qty;
                 double totalBuyCost = stockCost * (1.0 + suckersFeeRate);
-                double totalSellRevenue = stockCost * (1.0 - suckersFeeRate);
 
                 ImGui::SameLine();
                 bool canBuy = (bankBalance >= totalBuyCost);
@@ -1727,6 +1733,37 @@ void PlayingState::renderImGui()
                     ImGui::PopStyleColor(2);
                 }
 
+                ImGui::SameLine();
+                ImGui::TextDisabled("|");
+
+                ImGui::SameLine();
+                ImGui::TextColored(ImVec4(0.0f, 0.8f, 1.0f, 1.0f), "Zlecenie:");
+
+                ImGui::SameLine();
+                ImGui::PushItemWidth(90);
+                ImGui::InputDouble("##CenaLimit", &targetPrice, 0.0, 0.0, "%.2f");
+                ImGui::PopItemWidth();
+                if (targetPrice < 0.01)
+                    targetPrice = 0.01;
+
+                ImGui::SameLine();
+                ImGui::PushItemWidth(110);
+                const char *orderTypes[] = {"Limit Buy", "Limit Sell", "Stop Loss"};
+                ImGui::Combo("##TypZlecenia", &orderType, orderTypes, IM_ARRAYSIZE(orderTypes));
+                ImGui::PopItemWidth();
+
+                ImGui::SameLine();
+                if (ImGui::Button("+ ZLECENIE", ImVec2(90, 0)))
+                {
+                    OrderType type = OrderType::LimitBuy;
+                    if (orderType == 1)
+                        type = OrderType::LimitSell;
+                    else if (orderType == 2)
+                        type = OrderType::StopLoss;
+
+                    addPendingOrder(company.id, type, qty, targetPrice);
+                }
+
                 ImGui::Separator();
                 ImGui::PopID();
             }
@@ -1737,8 +1774,8 @@ void PlayingState::renderImGui()
 
         ImGui::EndChild();
         ImGui::End();
-    }
-
+    } 
+    
     if (showDetailsPanel)
     {
         ImGui::SetNextWindowPos(screenCenter, ImGuiCond_Appearing, pivotCenter);
@@ -1808,7 +1845,7 @@ void PlayingState::renderImGui()
 
                 static int orderQty = 1;
                 static double orderTargetPrice = 100.0;
-                static int orderTypeIdx = 0; // 0: Limit Buy, 1: Limit Sell, 2: Stop Loss
+                static int orderTypeIdx = 0;
 
                 ImGui::PushItemWidth(120);
                 ImGui::InputInt("Ilość##Order", &orderQty);
@@ -1841,6 +1878,7 @@ void PlayingState::renderImGui()
 
         ImGui::End();
     }
+
     renderVictoryModal();
     renderPieChartsWindow();
 }
