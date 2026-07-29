@@ -122,7 +122,8 @@ void PlayingState::handleEvent(const sf::Event &event)
 
 void PlayingState::addPendingOrder(int companyId, OrderType type, int quantity, double targetPrice)
 {
-    if (quantity <= 0 || targetPrice <= 0.0) return;
+    if (quantity <= 0 || targetPrice <= 0.0)
+        return;
 
     PendingOrder order;
     order.id = nextOrderId++;
@@ -136,16 +137,16 @@ void PlayingState::addPendingOrder(int companyId, OrderType type, int quantity, 
 
 void PlayingState::cancelPendingOrder(int orderId)
 {
-    std::erase_if(pendingOrders, [orderId](const PendingOrder &o) { return o.id == orderId; });
+    std::erase_if(pendingOrders, [orderId](const PendingOrder &o)
+                  { return o.id == orderId; });
 }
 
 void PlayingState::processPendingOrders()
 {
     for (auto it = pendingOrders.begin(); it != pendingOrders.end();)
     {
-        auto compIt = std::find_if(companies.begin(), companies.end(), [it](const Company &c) {
-            return c.id == it->companyId;
-        });
+        auto compIt = std::find_if(companies.begin(), companies.end(), [it](const Company &c)
+                                   { return c.id == it->companyId; });
 
         if (compIt == companies.end())
         {
@@ -183,8 +184,7 @@ void PlayingState::processPendingOrders()
             mail.sender = "System Maklerski (Automat)";
             mail.timestamp = timeBuf;
 
-            std::string typeStr = (it->type == OrderType::LimitBuy) ? "LIMIT BUY" :
-                                 ((it->type == OrderType::LimitSell) ? "LIMIT SELL" : "STOP LOSS");
+            std::string typeStr = (it->type == OrderType::LimitBuy) ? "LIMIT BUY" : ((it->type == OrderType::LimitSell) ? "LIMIT SELL" : "STOP LOSS");
 
             if (success)
             {
@@ -311,26 +311,34 @@ void PlayingState::update(sf::Time deltaTime)
             switch (c.sector)
             {
             case Sector::Tech:
-                if (silPrice > 16.0) sectorImpact -= 0.0005;
-                if (cobPrice > 36000.0) sectorImpact -= 0.0003;
+                if (silPrice > 16.0)
+                    sectorImpact -= 0.0005;
+                if (cobPrice > 36000.0)
+                    sectorImpact -= 0.0003;
                 break;
 
             case Sector::Automotive:
-                if (cobPrice > 36000.0) sectorImpact -= 0.0008;
-                if (oilPrice > 80.0) sectorImpact -= 0.0004;
+                if (cobPrice > 36000.0)
+                    sectorImpact -= 0.0008;
+                if (oilPrice > 80.0)
+                    sectorImpact -= 0.0004;
                 break;
 
             case Sector::Energy:
-                if (oilPrice > 78.0 && c.ticker == "ORU") sectorImpact += 0.0008;
-                if (uraPrice > 53.0 && c.ticker == "NUK") sectorImpact += 0.0010;
+                if (oilPrice > 78.0 && c.ticker == "ORU")
+                    sectorImpact += 0.0008;
+                if (uraPrice > 53.0 && c.ticker == "NUK")
+                    sectorImpact += 0.0010;
                 break;
 
             case Sector::Luxury:
-                if (xauPrice > 2000.0) sectorImpact += 0.0005;
+                if (xauPrice > 2000.0)
+                    sectorImpact += 0.0005;
                 break;
 
             case Sector::Consumer:
-                if (oilPrice > 80.0) sectorImpact -= 0.0004;
+                if (oilPrice > 80.0)
+                    sectorImpact -= 0.0004;
                 break;
             }
 
@@ -377,12 +385,12 @@ void PlayingState::renderClock()
     ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.8f, 1.0f), "KALENDARZ");
     ImGui::Separator();
     ImGui::Text("Rok: %d | Kwartał: Q%d", gameTime.year, gameTime.quarter);
-    ImGui::Text("Miesiąc: %d", gameTime.monthInQuarter);
-    ImGui::Text("Dzień: %02d", gameTime.day);
+    ImGui::Text("Miesiąc: %d | Dzień: %02d", gameTime.monthInQuarter, gameTime.day);
     ImGui::Spacing();
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Godzina: %02d:%02d", gameTime.hour, gameTime.minute);
-    ImGui::ProgressBar(gameTime.accumulator / 0.75f, ImVec2(180.0f, 0.0f), "");
-    
+
+    ImGui::ProgressBar(gameTime.accumulator / 0.75f, ImVec2(280.0f, 0.0f), "");
+
     ImGui::Spacing();
     ImGui::Separator();
     ImGui::TextColored(ImVec4(0.0f, 0.9f, 1.0f, 1.0f), "KONTROLA CZASU");
@@ -393,28 +401,44 @@ void PlayingState::renderClock()
     bool is3x = (timeSpeedMultiplier == 3.0f);
     bool is10x = (timeSpeedMultiplier == 10.0f);
 
-    if (isPaused) ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
-    if (ImGui::Button("||", ImVec2(38, 26)))
+    if (isPaused)
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
+    if (ImGui::Button("||", ImVec2(48, 34)))
     {
-        if (timeSpeedMultiplier > 0.0f) { savedSpeedMultiplier = timeSpeedMultiplier; timeSpeedMultiplier = 0.0f; }
-        else timeSpeedMultiplier = (savedSpeedMultiplier > 0.0f) ? savedSpeedMultiplier : 1.0f;
+        if (timeSpeedMultiplier > 0.0f)
+        {
+            savedSpeedMultiplier = timeSpeedMultiplier;
+            timeSpeedMultiplier = 0.0f;
+        }
+        else
+            timeSpeedMultiplier = (savedSpeedMultiplier > 0.0f) ? savedSpeedMultiplier : 1.0f;
     }
-    if (isPaused) ImGui::PopStyleColor();
+    if (isPaused)
+        ImGui::PopStyleColor();
 
     ImGui::SameLine();
-    if (is1x) ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.2f, 1.0f));
-    if (ImGui::Button("> 1x", ImVec2(42, 26))) timeSpeedMultiplier = 1.0f;
-    if (is1x) ImGui::PopStyleColor();
+    if (is1x)
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.2f, 1.0f));
+    if (ImGui::Button("> 1x", ImVec2(60, 34)))
+        timeSpeedMultiplier = 1.0f;
+    if (is1x)
+        ImGui::PopStyleColor();
 
     ImGui::SameLine();
-    if (is3x) ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.2f, 1.0f));
-    if (ImGui::Button(">> 3x", ImVec2(45, 26))) timeSpeedMultiplier = 3.0f;
-    if (is3x) ImGui::PopStyleColor();
+    if (is3x)
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.2f, 1.0f));
+    if (ImGui::Button(">> 3x", ImVec2(70, 34)))
+        timeSpeedMultiplier = 3.0f;
+    if (is3x)
+        ImGui::PopStyleColor();
 
     ImGui::SameLine();
-    if (is10x) ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.2f, 1.0f));
-    if (ImGui::Button(">>> 10x", ImVec2(48, 26))) timeSpeedMultiplier = 10.0f;
-    if (is10x) ImGui::PopStyleColor();
+    if (is10x)
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.2f, 1.0f));
+    if (ImGui::Button(">>> 10x", ImVec2(88, 34)))
+        timeSpeedMultiplier = 10.0f;
+    if (is10x)
+        ImGui::PopStyleColor();
 
     ImGui::Spacing();
     ImGui::Separator();
@@ -422,7 +446,7 @@ void PlayingState::renderClock()
     {
         double target = getQuarterlyQuota(gameTime.year, gameTime.quarter);
         ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "CEL Q%d: %.0f PLN", gameTime.quarter, target);
-        ImGui::ProgressBar(calculateNetWorth() / target, ImVec2(180.0f, 0.0f));
+        ImGui::ProgressBar(calculateNetWorth() / target, ImVec2(280.0f, 0.0f));
     }
     else
     {
@@ -477,10 +501,18 @@ void PlayingState::renderPortfolioPanel()
                         const Company *company = nullptr;
                         for (const auto &c : companies)
                         {
-                            if (c.id == companyId) { company = &c; break; }
+                            if (c.id == companyId)
+                            {
+                                company = &c;
+                                break;
+                            }
                         }
 
-                        if (!company) { ++it; continue; }
+                        if (!company)
+                        {
+                            ++it;
+                            continue;
+                        }
 
                         ImGui::TableNextRow();
 
@@ -490,11 +522,16 @@ void PlayingState::renderPortfolioPanel()
                         double profitLoss = netSellPayout - totalCostBasis;
                         double profitLossPercent = (totalCostBasis > 0.0) ? (profitLoss / totalCostBasis) * 100.0 : 0.0;
 
-                        ImGui::TableNextColumn(); ImGui::Text("%s", company->ticker.c_str());
-                        ImGui::TableNextColumn(); ImGui::Text("%d", pos.quantity);
-                        ImGui::TableNextColumn(); ImGui::Text("%.2f PLN", pos.avgBuyPrice);
-                        ImGui::TableNextColumn(); ImGui::Text("%.2f PLN", company->currentPrice);
-                        ImGui::TableNextColumn(); ImGui::Text("%.2f PLN", totalValue);
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%s", company->ticker.c_str());
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%d", pos.quantity);
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%.2f PLN", pos.avgBuyPrice);
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%.2f PLN", company->currentPrice);
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%.2f PLN", totalValue);
 
                         ImGui::TableNextColumn();
                         if (profitLoss >= 0.0)
@@ -547,7 +584,11 @@ void PlayingState::renderPortfolioPanel()
                         const Company *comp = nullptr;
                         for (const auto &c : companies)
                         {
-                            if (c.id == ord.companyId) { comp = &c; break; }
+                            if (c.id == ord.companyId)
+                            {
+                                comp = &c;
+                                break;
+                            }
                         }
 
                         ImGui::TableNextRow();
@@ -560,10 +601,14 @@ void PlayingState::renderPortfolioPanel()
                         else
                             ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "STOP LOSS");
 
-                        ImGui::TableNextColumn(); ImGui::Text("%s", comp ? comp->ticker.c_str() : "???");
-                        ImGui::TableNextColumn(); ImGui::Text("%d szt.", ord.quantity);
-                        ImGui::TableNextColumn(); ImGui::Text("%.2f PLN", ord.targetPrice);
-                        ImGui::TableNextColumn(); ImGui::Text("%.2f PLN", comp ? comp->currentPrice : 0.0);
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%s", comp ? comp->ticker.c_str() : "???");
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%d szt.", ord.quantity);
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%.2f PLN", ord.targetPrice);
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%.2f PLN", comp ? comp->currentPrice : 0.0);
 
                         ImGui::TableNextColumn();
                         ImGui::PushID(ord.id);
@@ -587,43 +632,58 @@ void PlayingState::renderPortfolioPanel()
 void PlayingState::generateStartingCompanies()
 {
     std::ifstream file("assets/companies.json");
-    if (!file.is_open()) return;
+    if (!file.is_open())
+        return;
     try
     {
-        nlohmann::json j; file >> j;
+        nlohmann::json j;
+        file >> j;
         companies = j.get<std::vector<Company>>();
-    } catch (...) {}
+    }
+    catch (...)
+    {
+    }
 }
 
 void PlayingState::generateStartingCommodities()
 {
     std::ifstream file("assets/commodities.json");
-    if (!file.is_open()) return;
+    if (!file.is_open())
+        return;
     try
     {
-        nlohmann::json j; file >> j;
+        nlohmann::json j;
+        file >> j;
         commodities = j.get<std::vector<Commodity>>();
-    } catch (...) {}
+    }
+    catch (...)
+    {
+    }
 }
 
 void PlayingState::loadDarkwebItems()
 {
     std::ifstream file("assets/darkweb_items.json");
-    if (!file.is_open()) return;
+    if (!file.is_open())
+        return;
     try
     {
-        nlohmann::json j; file >> j;
+        nlohmann::json j;
+        file >> j;
         darkwebItems = j.get<std::vector<DarkwebItem>>();
-    } catch (...) {}
+    }
+    catch (...)
+    {
+    }
 }
 
 bool PlayingState::buyDarkwebItem(int itemId)
 {
-    auto it = std::find_if(darkwebItems.begin(), darkwebItems.end(), [itemId](const DarkwebItem& item) {
-        return item.id == itemId;
-    });
+    auto it = std::find_if(darkwebItems.begin(), darkwebItems.end(), [itemId](const DarkwebItem &item)
+                           { return item.id == itemId; });
 
-    if (it == darkwebItems.end() || it->isPurchased) return false;
+    if (it == darkwebItems.end() || it->isPurchased)
+        return false;
 
     if (bankBalance >= it->price)
     {
@@ -652,23 +712,28 @@ double PlayingState::calculateNetWorth() const
     double netWorth = bankBalance;
     for (const auto &[companyId, pos] : portfolio)
     {
-        auto it = std::find_if(companies.begin(), companies.end(), [companyId](const Company &c) { return c.id == companyId; });
-        if (it != companies.end()) netWorth += pos.quantity * it->currentPrice;
+        auto it = std::find_if(companies.begin(), companies.end(), [companyId](const Company &c)
+                               { return c.id == companyId; });
+        if (it != companies.end())
+            netWorth += pos.quantity * it->currentPrice;
     }
     return netWorth;
 }
 
 bool PlayingState::payBill(int billId)
 {
-    auto it = std::find_if(inbox.begin(), inbox.end(), [billId](const MailMessage &m) { return m.id == billId; });
-    if (it == inbox.end() || it->isResolved) return false;
+    auto it = std::find_if(inbox.begin(), inbox.end(), [billId](const MailMessage &m)
+                           { return m.id == billId; });
+    if (it == inbox.end() || it->isResolved)
+        return false;
 
     if (bankBalance >= it->amount)
     {
         bankBalance -= it->amount;
         it->isResolved = true;
         int targetId = it->id;
-        std::erase_if(inbox, [targetId](const MailMessage &m) { return m.parentBillId == targetId; });
+        std::erase_if(inbox, [targetId](const MailMessage &m)
+                      { return m.parentBillId == targetId; });
         return true;
     }
     return false;
@@ -676,15 +741,19 @@ bool PlayingState::payBill(int billId)
 
 bool PlayingState::buyShares(int companyId, int quantity)
 {
-    if (quantity <= 0) return false;
-    auto it = std::find_if(companies.begin(), companies.end(), [companyId](const Company &c) { return c.id == companyId; });
-    if (it == companies.end()) return false;
+    if (quantity <= 0)
+        return false;
+    auto it = std::find_if(companies.begin(), companies.end(), [companyId](const Company &c)
+                           { return c.id == companyId; });
+    if (it == companies.end())
+        return false;
 
     double stockCost = it->currentPrice * quantity;
     double fee = stockCost * suckersFeeRate;
     double totalCost = stockCost + fee;
 
-    if (bankBalance < totalCost) return false;
+    if (bankBalance < totalCost)
+        return false;
 
     bankBalance -= totalCost;
     stats.totalFeesPaid += fee;
@@ -697,7 +766,8 @@ bool PlayingState::buyShares(int companyId, int quantity)
     pos.avgBuyPrice = (previousTotalCost + stockCost) / pos.quantity;
 
     auto itMarker = std::find_if(tradeMarkers.rbegin(), tradeMarkers.rend(),
-                                 [companyId, this](const TradeMarker &m) {
+                                 [companyId, this](const TradeMarker &m)
+                                 {
                                      return m.companyId == companyId && m.isBuy && std::abs(m.timeX - totalSimulatedHours) < 0.1;
                                  });
 
@@ -729,22 +799,28 @@ bool PlayingState::buyShares(int companyId, int quantity)
 
 bool PlayingState::sellShares(int companyId, int quantity)
 {
-    if (quantity <= 0) return false;
+    if (quantity <= 0)
+        return false;
     auto itPos = portfolio.find(companyId);
-    if (itPos == portfolio.end()) return false;
+    if (itPos == portfolio.end())
+        return false;
 
     auto &pos = itPos->second;
-    if (pos.quantity < quantity) return false;
+    if (pos.quantity < quantity)
+        return false;
 
-    auto itComp = std::find_if(companies.begin(), companies.end(), [companyId](const Company &c) { return c.id == companyId; });
-    if (itComp == companies.end()) return false;
+    auto itComp = std::find_if(companies.begin(), companies.end(), [companyId](const Company &c)
+                               { return c.id == companyId; });
+    if (itComp == companies.end())
+        return false;
 
     double grossPayout = itComp->currentPrice * quantity;
     double fee = grossPayout * suckersFeeRate;
     double netPayout = grossPayout - fee;
 
     double profitOnThisTrade = (itComp->currentPrice - pos.avgBuyPrice) * quantity - fee;
-    if (profitOnThisTrade > stats.maxSingleProfit) stats.maxSingleProfit = profitOnThisTrade;
+    if (profitOnThisTrade > stats.maxSingleProfit)
+        stats.maxSingleProfit = profitOnThisTrade;
 
     stats.totalFeesPaid += fee;
     stats.totalTrades++;
@@ -752,7 +828,8 @@ bool PlayingState::sellShares(int companyId, int quantity)
     pos.quantity -= quantity;
 
     auto itMarker = std::find_if(tradeMarkers.rbegin(), tradeMarkers.rend(),
-                                 [companyId, this](const TradeMarker &m) {
+                                 [companyId, this](const TradeMarker &m)
+                                 {
                                      return m.companyId == companyId && !m.isBuy && std::abs(m.timeX - totalSimulatedHours) < 0.1;
                                  });
 
@@ -782,7 +859,8 @@ bool PlayingState::sellShares(int companyId, int quantity)
         tradeMarkers.push_back(marker);
     }
 
-    if (pos.quantity <= 0) portfolio.erase(companyId);
+    if (pos.quantity <= 0)
+        portfolio.erase(companyId);
     return true;
 }
 
@@ -790,7 +868,8 @@ void PlayingState::render(sf::RenderWindow &window) {}
 
 void PlayingState::renderVictoryModal()
 {
-    if (!showVictoryModal) return;
+    if (!showVictoryModal)
+        return;
 
     ImGui::OpenPopup("ZWYCIĘSTWO!");
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -800,9 +879,11 @@ void PlayingState::renderVictoryModal()
     if (ImGui::BeginPopupModal("ZWYCIĘSTWO!", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
         ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "GRATULACJE! ZGROMADZIŁEŚ 1 000 000 PLN!");
-        ImGui::Separator(); ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
         ImGui::TextWrapped("Stałeś się legendą Wall Street!");
-        ImGui::Separator(); ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
 
         if (ImGui::Button("PRZEJDŹ DO FREEPLAY", ImVec2(180, 35)))
         {
@@ -824,7 +905,11 @@ void PlayingState::renderVictoryModal()
 void PlayingState::renderBrowserPanel()
 {
     int unreadMails = 0;
-    for (const auto &m : inbox) { if (!m.isRead) unreadMails++; }
+    for (const auto &m : inbox)
+    {
+        if (!m.isRead)
+            unreadMails++;
+    }
 
     ImVec2 screenCenter(ImGui::GetIO().DisplaySize.x / 2.0f, ImGui::GetIO().DisplaySize.y / 2.0f);
     ImGui::SetNextWindowPos(screenCenter, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
@@ -834,18 +919,24 @@ void PlayingState::renderBrowserPanel()
     {
         ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.12f, 0.12f, 0.14f, 1.0f));
         ImGui::BeginChild("BrowserHeader", ImVec2(0, 36), true, ImGuiWindowFlags_NoScrollbar);
-        
+
         ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.0f, 1.0f), "FIREWOLF v3.1");
-        ImGui::SameLine(); ImGui::TextDisabled("|"); ImGui::SameLine();
-        
+        ImGui::SameLine();
+        ImGui::TextDisabled("|");
+        ImGui::SameLine();
+
         std::string currentUrl = "https://mail.firewolf.net/inbox";
-        if (activeBrowserTab == 1) currentUrl = "https://online.pkobp.pl/dashboard";
-        else if (activeBrowserTab == 2) currentUrl = "http://darknet666onion.onion/market";
+        if (activeBrowserTab == 1)
+            currentUrl = "https://online.pkobp.pl/dashboard";
+        else if (activeBrowserTab == 2)
+            currentUrl = "http://darknet666onion.onion/market";
 
         ImGui::SetNextItemWidth(450.0f);
         ImGui::InputText("##URL", currentUrl.data(), currentUrl.size(), ImGuiInputTextFlags_ReadOnly);
         ImGui::SameLine();
-        if (ImGui::Button("Odśwież")) {}
+        if (ImGui::Button("Odśwież"))
+        {
+        }
 
         ImGui::EndChild();
         ImGui::PopStyleColor();
@@ -854,8 +945,10 @@ void PlayingState::renderBrowserPanel()
         if (ImGui::BeginTabBar("FirewolfTabs", ImGuiTabBarFlags_None))
         {
             std::string mailTabTitle = "Poczta";
-            if (unreadMails > 0) mailTabTitle += " (" + std::to_string(unreadMails) + ")###MailTab";
-            else mailTabTitle += "###MailTab";
+            if (unreadMails > 0)
+                mailTabTitle += " (" + std::to_string(unreadMails) + ")###MailTab";
+            else
+                mailTabTitle += "###MailTab";
 
             if (ImGui::BeginTabItem(mailTabTitle.c_str()))
             {
@@ -887,15 +980,19 @@ void PlayingState::renderMailTab()
     ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.8f, 1.0f), "Odebrane (%zu)", inbox.size());
     ImGui::Separator();
 
-    if (inbox.empty()) ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Brak wiadomości.");
+    if (inbox.empty())
+        ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Brak wiadomości.");
 
     for (auto &mail : inbox)
     {
         ImGui::PushID(mail.id);
         std::string label = mail.sender;
-        if (!mail.isRead) label = "[NOWA] " + label;
-        if (mail.type == MailType::Bill && !mail.isResolved) label += " (!)";
-        if (mail.type == MailType::TipOffer && !mail.isResolved) label += " ($)";
+        if (!mail.isRead)
+            label = "[NOWA] " + label;
+        if (mail.type == MailType::Bill && !mail.isResolved)
+            label += " (!)";
+        if (mail.type == MailType::TipOffer && !mail.isResolved)
+            label += " ($)";
 
         bool isSelected = (selectedMailId.has_value() && selectedMailId.value() == mail.id);
         if (ImGui::Selectable(label.c_str(), isSelected))
@@ -903,7 +1000,8 @@ void PlayingState::renderMailTab()
             selectedMailId = mail.id;
             mail.isRead = true;
         }
-        if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", mail.subject.c_str());
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("%s", mail.subject.c_str());
         ImGui::PopID();
     }
     ImGui::EndChild();
@@ -913,7 +1011,8 @@ void PlayingState::renderMailTab()
     ImGui::BeginChild("TrescMaila", ImVec2(0, 0), true);
     if (selectedMailId.has_value())
     {
-        auto it = std::find_if(inbox.begin(), inbox.end(), [this](const MailMessage &m) { return m.id == selectedMailId.value(); });
+        auto it = std::find_if(inbox.begin(), inbox.end(), [this](const MailMessage &m)
+                               { return m.id == selectedMailId.value(); });
 
         if (it != inbox.end())
         {
@@ -921,9 +1020,12 @@ void PlayingState::renderMailTab()
             ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.0f), "Od: %s", mail.sender.c_str());
             ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Data: %s", mail.timestamp.c_str());
             ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Temat: %s", mail.subject.c_str());
-            ImGui::Separator(); ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
             ImGui::TextWrapped("%s", mail.body.c_str());
-            ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
 
             if (mail.type == MailType::Bill)
             {
@@ -932,15 +1034,18 @@ void PlayingState::renderMailTab()
                     ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "Do zapłaty: %.2f PLN", mail.amount);
                     ImGui::Spacing();
                     bool canAfford = (bankBalance >= mail.amount);
-                    if (!canAfford) ImGui::BeginDisabled();
-                    if (ImGui::Button("ZAPŁAĆ RACHUNEK", ImVec2(180, 32))) payBill(mail.id);
+                    if (!canAfford)
+                        ImGui::BeginDisabled();
+                    if (ImGui::Button("ZAPŁAĆ RACHUNEK", ImVec2(180, 32)))
+                        payBill(mail.id);
                     if (!canAfford)
                     {
                         ImGui::EndDisabled();
                         ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "Brak wystarczających środków na koncie!");
                     }
                 }
-                else ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "[ V ] RACHUNEK ZAZNACZONY JAKO OPŁACONY");
+                else
+                    ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "[ V ] RACHUNEK ZAZNACZONY JAKO OPŁACONY");
             }
             else if (mail.type == MailType::TipOffer)
             {
@@ -949,7 +1054,8 @@ void PlayingState::renderMailTab()
                     ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "Koszt informacji: %.2f PLN", mail.amount);
                     ImGui::Spacing();
                     bool canAfford = (bankBalance >= mail.amount);
-                    if (!canAfford) ImGui::BeginDisabled();
+                    if (!canAfford)
+                        ImGui::BeginDisabled();
 
                     char timeBuffer[64];
                     snprintf(timeBuffer, sizeof(timeBuffer), "R%d M%d D%02d", gameTime.year, gameTime.monthInQuarter, gameTime.day);
@@ -963,27 +1069,190 @@ void PlayingState::renderMailTab()
                         ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "Brak środków na koncie!");
                     }
                 }
-                else ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "[ V ] INFORMACJA ZAKUPIONA");
+                else
+                    ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "[ V ] INFORMACJA ZAKUPIONA");
             }
 
-            ImGui::Spacing(); ImGui::Separator();
+            ImGui::Spacing();
+            ImGui::Separator();
             if (ImGui::Button("Usuń wiadomość"))
             {
                 int idToDelete = mail.id;
                 selectedMailId = std::nullopt;
-                std::erase_if(inbox, [idToDelete](const MailMessage &m) { return m.id == idToDelete; });
+                std::erase_if(inbox, [idToDelete](const MailMessage &m)
+                              { return m.id == idToDelete; });
             }
         }
     }
-    else ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Wybierz wiadomość z listy po lewej stronie.");
+    else
+        ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Wybierz wiadomość z listy po lewej stronie.");
     ImGui::EndChild();
 }
+void PlayingState::renderPieChartsWindow()
+{
+    if (!showPieChartsWindow)
+        return;
 
+    ImVec2 screenCenter(ImGui::GetIO().DisplaySize.x / 2.0f, ImGui::GetIO().DisplaySize.y / 2.0f);
+    ImGui::SetNextWindowPos(screenCenter, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(780, 440), ImGuiCond_FirstUseEver);
+
+    if (ImGui::Begin("Analiza Majątku i Dywersyfikacji###PieChartsWin", &showPieChartsWindow))
+    {
+        ImGui::Columns(2, "PieColumns", true);
+
+        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.8f, 1.0f), "STRUKTURA MAJĄTKU & DŁUGU");
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        double stocksValue = 0.0;
+        for (const auto &[compIndex, pos] : portfolio)
+        {
+            auto compIt = std::find_if(companies.begin(), companies.end(), [compIndex](const Company &c)
+                                       { return c.id == compIndex; });
+            if (compIt != companies.end())
+            {
+                stocksValue += pos.quantity * compIt->currentPrice;
+            }
+        }
+        double cashValue = bankBalance;
+        double debtValue = bankSystem.getPlayerDebt();
+        double totalAssets = cashValue + stocksValue + debtValue;
+
+        std::vector<std::string> assetLabelStrs;
+        std::vector<const char *> assetLabels;
+        std::vector<double> assetValues;
+
+        if (totalAssets > 0.0)
+        {
+            if (cashValue > 0)
+            {
+                assetLabelStrs.push_back("Gotówka (" + std::to_string((int)cashValue) + " PLN)");
+                assetValues.push_back((cashValue / totalAssets) * 100.0);
+            }
+            if (stocksValue > 0)
+            {
+                assetLabelStrs.push_back("Akcje (" + std::to_string((int)stocksValue) + " PLN)");
+                assetValues.push_back((stocksValue / totalAssets) * 100.0);
+            }
+            if (debtValue > 0)
+            {
+                assetLabelStrs.push_back("Kredyt (" + std::to_string((int)debtValue) + " PLN)");
+                assetValues.push_back((debtValue / totalAssets) * 100.0);
+            }
+
+            for (const auto &str : assetLabelStrs)
+            {
+                assetLabels.push_back(str.c_str());
+            }
+        }
+
+        if (!assetValues.empty())
+        {
+            if (ImPlot::BeginPlot("##AssetsPiePlot", ImVec2(-1, 300), ImPlotFlags_Equal | ImPlotFlags_NoMouseText))
+            {
+                ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoDecorations, ImPlotAxisFlags_NoDecorations);
+                ImPlot::PlotPieChart(assetLabels.data(), assetValues.data(), static_cast<int>(assetValues.size()), 0.5, 0.5, 0.4, "%.1f%%");
+                ImPlot::EndPlot();
+            }
+        }
+        else
+        {
+            ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Brak danych do wyświetlenia.");
+        }
+
+        ImGui::NextColumn();
+
+        ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "DYWERSIFIKACJA SEKTOROWA");
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        std::map<Sector, double> sectorValues;
+        double totalSectorValue = 0.0;
+
+        for (const auto &[compIndex, pos] : portfolio)
+        {
+            auto compIt = std::find_if(companies.begin(), companies.end(), [compIndex](const Company &c)
+                                       { return c.id == compIndex; });
+            if (compIt != companies.end() && pos.quantity > 0)
+            {
+                double val = pos.quantity * compIt->currentPrice;
+                sectorValues[compIt->sector] += val;
+                totalSectorValue += val;
+            }
+        }
+
+        std::vector<std::string> sectorLabelStrs;
+        std::vector<const char *> sectorLabels;
+        std::vector<double> sectorValVec;
+
+        auto getSectorName = [](Sector s) -> std::string
+        {
+            switch (s)
+            {
+            case Sector::Tech:
+                return "Tech";
+            case Sector::Automotive:
+                return "Automotive";
+            case Sector::Energy:
+                return "Energy";
+            case Sector::Luxury:
+                return "Luxury";
+            case Sector::Consumer:
+                return "Consumer";
+            default:
+                return "Inne";
+            }
+        };
+
+        if (totalSectorValue > 0.0)
+        {
+            for (const auto &[sec, val] : sectorValues)
+            {
+                if (val > 0)
+                {
+                    sectorLabelStrs.push_back(getSectorName(sec) + " (" + std::to_string((int)val) + " PLN)");
+                    sectorValVec.push_back((val / totalSectorValue) * 100.0);
+                }
+            }
+
+            for (const auto &name : sectorLabelStrs)
+            {
+                sectorLabels.push_back(name.c_str());
+            }
+        }
+
+        if (!sectorValVec.empty())
+        {
+            if (ImPlot::BeginPlot("##SectorPiePlot", ImVec2(-1, 300), ImPlotFlags_Equal | ImPlotFlags_NoMouseText))
+            {
+                ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoDecorations, ImPlotAxisFlags_NoDecorations);
+                ImPlot::PlotPieChart(sectorLabels.data(), sectorValVec.data(), static_cast<int>(sectorValVec.size()), 0.5, 0.5, 0.4, "%.1f%%");
+                ImPlot::EndPlot();
+            }
+        }
+        else
+        {
+            ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Brak posiadanych akcji w portfelu.");
+        }
+
+        ImGui::Columns(1);
+    }
+    ImGui::End();
+}
 void PlayingState::renderBankTab()
 {
     ImGui::BeginChild("BankContent", ImVec2(0, 0), true);
+
     ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.8f, 1.0f), "PKO BANK CENTRALNY S.A. - SYSTEM TRANSAKCYJNY");
-    ImGui::Separator(); ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    ImGui::Checkbox("Otwórz Wykresy Kołowe Majątku & Dywersyfikacji", &showPieChartsWindow);
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
     ImGui::Columns(2, "BankColumns", true);
 
     ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "WSKAŹNIKI MAKROEKONOMICZNE");
@@ -1008,22 +1277,31 @@ void PlayingState::renderBankTab()
     ImGui::Text("Dostępna zdolność kredytowa: %.2f PLN", maxLoan);
     ImGui::Text("Tygodniowa rata odsetkowa: %.2f PLN", bankSystem.calculateWeeklyInterest());
 
-    ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
 
     ImGui::InputDouble("Kwota (PLN)", &loanAmountInput, 100.0, 1000.0, "%.2f");
-    if (loanAmountInput < 100.0) loanAmountInput = 100.0;
+    if (loanAmountInput < 100.0)
+        loanAmountInput = 100.0;
 
     ImGui::Spacing();
     bool canBorrow = (loanAmountInput <= maxLoan);
-    if (!canBorrow) ImGui::BeginDisabled();
-    if (ImGui::Button("WEŹ KREDYT", ImVec2(160, 35))) bankSystem.takeLoan(loanAmountInput, bankBalance, calculateNetWorth());
-    if (!canBorrow) ImGui::EndDisabled();
+    if (!canBorrow)
+        ImGui::BeginDisabled();
+    if (ImGui::Button("WEŹ KREDYT", ImVec2(160, 35)))
+        bankSystem.takeLoan(loanAmountInput, bankBalance, calculateNetWorth());
+    if (!canBorrow)
+        ImGui::EndDisabled();
 
     ImGui::SameLine();
     bool canRepay = (bankSystem.getPlayerDebt() > 0.0 && bankBalance >= loanAmountInput);
-    if (!canRepay) ImGui::BeginDisabled();
-    if (ImGui::Button("SPŁAĆ KREDYT", ImVec2(160, 35))) bankSystem.repayLoan(loanAmountInput, bankBalance);
-    if (!canRepay) ImGui::EndDisabled();
+    if (!canRepay)
+        ImGui::BeginDisabled();
+    if (ImGui::Button("SPŁAĆ KREDYT", ImVec2(160, 35)))
+        bankSystem.repayLoan(loanAmountInput, bankBalance);
+    if (!canRepay)
+        ImGui::EndDisabled();
 
     ImGui::Columns(1);
     ImGui::EndChild();
@@ -1033,12 +1311,14 @@ void PlayingState::renderDarkwebTab()
 {
     ImGui::BeginChild("DarkwebContent", ImVec2(0, 0), true);
     ImGui::TextColored(ImVec4(0.8f, 0.1f, 0.1f, 1.0f), "DARKWEB BLACK MARKET");
-    ImGui::SameLine(); ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "[POŁĄCZENIE TOR: SZYFROWANE]");
+    ImGui::SameLine();
+    ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "[POŁĄCZENIE TOR: SZYFROWANE]");
     ImGui::Separator();
     ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Nielegalne oprogramowanie, sprzęty i usługi.");
     ImGui::Spacing();
 
-    if (darkwebItems.empty()) ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Brak towaru w asortymencie.");
+    if (darkwebItems.empty())
+        ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Brak towaru w asortymencie.");
     else
     {
         if (ImGui::BeginTable("TabelaDarkweb", 5, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY))
@@ -1053,20 +1333,28 @@ void PlayingState::renderDarkwebTab()
             for (auto &item : darkwebItems)
             {
                 ImGui::TableNextRow();
-                ImGui::TableNextColumn(); ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "%s", item.name.c_str());
-                ImGui::TableNextColumn(); ImGui::Text("%s", item.category.c_str());
-                ImGui::TableNextColumn(); ImGui::TextWrapped("%s", item.description.c_str());
-                ImGui::TableNextColumn(); ImGui::Text("%.2f PLN", item.price);
+                ImGui::TableNextColumn();
+                ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "%s", item.name.c_str());
+                ImGui::TableNextColumn();
+                ImGui::Text("%s", item.category.c_str());
+                ImGui::TableNextColumn();
+                ImGui::TextWrapped("%s", item.description.c_str());
+                ImGui::TableNextColumn();
+                ImGui::Text("%.2f PLN", item.price);
 
                 ImGui::TableNextColumn();
                 ImGui::PushID(item.id);
-                if (item.isPurchased) ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "[ ZAKUPIONO ]");
+                if (item.isPurchased)
+                    ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "[ ZAKUPIONO ]");
                 else
                 {
                     bool canAfford = (bankBalance >= item.price);
-                    if (!canAfford) ImGui::BeginDisabled();
-                    if (ImGui::Button("KUP PRZEDMIOT", ImVec2(-1, 0))) buyDarkwebItem(item.id);
-                    if (!canAfford) ImGui::EndDisabled();
+                    if (!canAfford)
+                        ImGui::BeginDisabled();
+                    if (ImGui::Button("KUP PRZEDMIOT", ImVec2(-1, 0)))
+                        buyDarkwebItem(item.id);
+                    if (!canAfford)
+                        ImGui::EndDisabled();
                 }
                 ImGui::PopID();
             }
@@ -1090,9 +1378,14 @@ void PlayingState::renderImGui()
     ImGui::Separator();
 
     int unreadCount = 0;
-    for (const auto &m : inbox) { if (!m.isRead) unreadCount++; }
+    for (const auto &m : inbox)
+    {
+        if (!m.isRead)
+            unreadCount++;
+    }
     std::string browserCheckboxLabel = "Przeglądarka Firewolf";
-    if (unreadCount > 0) browserCheckboxLabel += " (" + std::to_string(unreadCount) + "!)";
+    if (unreadCount > 0)
+        browserCheckboxLabel += " (" + std::to_string(unreadCount) + "!)";
 
     ImGui::Checkbox("Portfel & Bank", &showPortfolioPanel);
     ImGui::SameLine();
@@ -1106,7 +1399,9 @@ void PlayingState::renderImGui()
     ImGui::SameLine();
     ImGui::Checkbox("Wykresy", &showChartPanel);
 
-    ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
 
     if (ImGui::Button("Zbankrutuj", ImVec2(-1, 30)))
     {
@@ -1116,8 +1411,10 @@ void PlayingState::renderImGui()
     }
     ImGui::End();
 
-    if (showBrowserPanel) renderBrowserPanel();
-    if (showPortfolioPanel) renderPortfolioPanel();
+    if (showBrowserPanel)
+        renderBrowserPanel();
+    if (showPortfolioPanel)
+        renderPortfolioPanel();
 
     if (showCompaniesPanel)
     {
@@ -1135,8 +1432,10 @@ void PlayingState::renderImGui()
             for (const auto &company : companies)
             {
                 ImGui::TableNextRow();
-                ImGui::TableNextColumn(); ImGui::Text("%s", company.ticker.c_str());
-                ImGui::TableNextColumn(); ImGui::Text("%.2f", company.currentPrice);
+                ImGui::TableNextColumn();
+                ImGui::Text("%s", company.ticker.c_str());
+                ImGui::TableNextColumn();
+                ImGui::Text("%.2f", company.currentPrice);
 
                 ImGui::TableNextColumn();
                 ImGui::PushID(company.id);
@@ -1168,9 +1467,12 @@ void PlayingState::renderImGui()
             for (const auto &comm : commodities)
             {
                 ImGui::TableNextRow();
-                ImGui::TableNextColumn(); ImGui::Text("%s", comm.symbol.c_str());
-                ImGui::TableNextColumn(); ImGui::Text("%s", comm.name.c_str());
-                ImGui::TableNextColumn(); ImGui::Text("%.2f\n%s", comm.currentPrice, comm.unit.c_str());
+                ImGui::TableNextColumn();
+                ImGui::Text("%s", comm.symbol.c_str());
+                ImGui::TableNextColumn();
+                ImGui::Text("%s", comm.name.c_str());
+                ImGui::TableNextColumn();
+                ImGui::Text("%.2f\n%s", comm.currentPrice, comm.unit.c_str());
             }
             ImGui::EndTable();
         }
@@ -1186,11 +1488,14 @@ void PlayingState::renderImGui()
         ImGui::BeginChild("PanelFiltrow", ImVec2(200, 0), true);
         ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.8f, 1.0f), "Porównanie Akcji");
         ImGui::Separator();
-        for (auto &company : companies) ImGui::Checkbox(company.ticker.c_str(), &company.showOnChart);
-        ImGui::Spacing(); ImGui::Spacing();
+        for (auto &company : companies)
+            ImGui::Checkbox(company.ticker.c_str(), &company.showOnChart);
+        ImGui::Spacing();
+        ImGui::Spacing();
         ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Surowce");
         ImGui::Separator();
-        for (auto &comm : commodities) ImGui::Checkbox(comm.symbol.c_str(), &comm.showOnChart);
+        for (auto &comm : commodities)
+            ImGui::Checkbox(comm.symbol.c_str(), &comm.showOnChart);
         ImGui::EndChild();
 
         ImGui::SameLine();
@@ -1224,9 +1529,14 @@ void PlayingState::renderImGui()
                 for (size_t i = 0; i < timeHistory.size(); ++i)
                 {
                     double dist = std::abs(timeHistory[i] - mousePos.x);
-                    if (dist < min_dist) { min_dist = dist; closestIdx = static_cast<int>(i); }
+                    if (dist < min_dist)
+                    {
+                        min_dist = dist;
+                        closestIdx = static_cast<int>(i);
+                    }
                 }
-                if (closestIdx != -1) targetX = timeHistory[closestIdx];
+                if (closestIdx != -1)
+                    targetX = timeHistory[closestIdx];
             }
 
             for (const auto &company : companies)
@@ -1280,18 +1590,21 @@ void PlayingState::renderImGui()
 
                 for (const auto &company : companies)
                 {
-                    if (company.showOnChart) ImGui::Text("%s: %.2f PLN", company.ticker.c_str(), company.priceHistory[closestIdx]);
+                    if (company.showOnChart)
+                        ImGui::Text("%s: %.2f PLN", company.ticker.c_str(), company.priceHistory[closestIdx]);
                 }
                 for (const auto &comm : commodities)
                 {
-                    if (comm.showOnChart) ImGui::Text("%s: %.2f %s", comm.symbol.c_str(), comm.priceHistory[closestIdx], comm.unit.c_str());
+                    if (comm.showOnChart)
+                        ImGui::Text("%s: %.2f %s", comm.symbol.c_str(), comm.priceHistory[closestIdx], comm.unit.c_str());
                 }
                 ImGui::EndTooltip();
             }
 
             for (const auto &trade : tradeMarkers)
             {
-                auto itComp = std::find_if(companies.begin(), companies.end(), [trade](const Company &c) { return c.id == trade.companyId; });
+                auto itComp = std::find_if(companies.begin(), companies.end(), [trade](const Company &c)
+                                           { return c.id == trade.companyId; });
 
                 if (itComp != companies.end() && itComp->showOnChart)
                 {
@@ -1299,7 +1612,7 @@ void PlayingState::renderImGui()
                     ImVec2 markerPix = ImPlot::PlotToPixels(ImPlotPoint(trade.timeX, trade.priceY));
                     float dx = mousePos.x - markerPix.x;
                     float dy = mousePos.y - markerPix.y;
-                    bool isHoveredMarker = ((dx * dx + dy * dy) <= 64.0f); 
+                    bool isHoveredMarker = ((dx * dx + dy * dy) <= 64.0f);
 
                     float currentMarkerSize = isHoveredMarker ? 8.0f : 4.0f;
 
@@ -1344,11 +1657,11 @@ void PlayingState::renderImGui()
                     }
                 }
             }
-
             ImPlot::EndPlot();
         }
 
-        ImGui::Spacing(); ImGui::Separator();
+        ImGui::Spacing();
+        ImGui::Separator();
         ImGui::TextColored(ImVec4(0.0f, 0.9f, 1.0f, 1.0f), "SZYBKI HANDEL ZAZNACZONYCH SPÓŁEK");
         ImGui::Spacing();
 
@@ -1369,7 +1682,8 @@ void PlayingState::renderImGui()
 
                 int ownedShares = 0;
                 auto itPos = portfolio.find(company.id);
-                if (itPos != portfolio.end()) ownedShares = itPos->second.quantity;
+                if (itPos != portfolio.end())
+                    ownedShares = itPos->second.quantity;
 
                 ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "[ %s ]", company.ticker.c_str());
                 ImGui::SameLine();
@@ -1378,7 +1692,8 @@ void PlayingState::renderImGui()
                 ImGui::PushItemWidth(100);
                 ImGui::InputInt("Ilość", &qty);
                 ImGui::PopItemWidth();
-                if (qty < 1) qty = 1;
+                if (qty < 1)
+                    qty = 1;
 
                 double stockCost = company.currentPrice * qty;
                 double totalBuyCost = stockCost * (1.0 + suckersFeeRate);
@@ -1386,22 +1701,29 @@ void PlayingState::renderImGui()
 
                 ImGui::SameLine();
                 bool canBuy = (bankBalance >= totalBuyCost);
-                if (!canBuy) ImGui::BeginDisabled();
-                if (ImGui::Button("KUP", ImVec2(75, 0))) buyShares(company.id, qty);
-                if (!canBuy) ImGui::EndDisabled();
+                if (!canBuy)
+                    ImGui::BeginDisabled();
+                if (ImGui::Button("KUP", ImVec2(75, 0)))
+                    buyShares(company.id, qty);
+                if (!canBuy)
+                    ImGui::EndDisabled();
 
                 if (ownedShares > 0)
                 {
                     ImGui::SameLine();
                     bool canSell = (ownedShares >= qty);
-                    if (!canSell) ImGui::BeginDisabled();
-                    if (ImGui::Button("SPRZEDAJ", ImVec2(80, 0))) sellShares(company.id, std::min(qty, ownedShares));
-                    if (!canSell) ImGui::EndDisabled();
+                    if (!canSell)
+                        ImGui::BeginDisabled();
+                    if (ImGui::Button("SPRZEDAJ", ImVec2(80, 0)))
+                        sellShares(company.id, std::min(qty, ownedShares));
+                    if (!canSell)
+                        ImGui::EndDisabled();
 
                     ImGui::SameLine();
                     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 1.0f));
                     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
-                    if (ImGui::Button("SPRZEDAJ WSZYSTKO", ImVec2(140, 0))) sellShares(company.id, ownedShares);
+                    if (ImGui::Button("SPRZEDAJ WSZYSTKO", ImVec2(140, 0)))
+                        sellShares(company.id, ownedShares);
                     ImGui::PopStyleColor(2);
                 }
 
@@ -1428,7 +1750,11 @@ void PlayingState::renderImGui()
             const Company *selected = nullptr;
             for (const auto &c : companies)
             {
-                if (c.id == selectedCompanyId.value()) { selected = &c; break; }
+                if (c.id == selectedCompanyId.value())
+                {
+                    selected = &c;
+                    break;
+                }
             }
 
             if (selected)
@@ -1440,11 +1766,14 @@ void PlayingState::renderImGui()
 
                 ImGui::Spacing();
                 ImGui::TextWrapped("Profil działalności:\n%s", selected->description.c_str());
-                ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
 
                 int ownedShares = 0;
                 auto itPos = portfolio.find(selected->id);
-                if (itPos != portfolio.end()) ownedShares = itPos->second.quantity;
+                if (itPos != portfolio.end())
+                    ownedShares = itPos->second.quantity;
 
                 ImGui::TextColored(ImVec4(0.0f, 0.9f, 1.0f, 1.0f), "SZYBKI HANDEL NATYCHMIASTOWY");
                 ImGui::Text("Posiadane akcje: %d szt.", ownedShares);
@@ -1453,20 +1782,27 @@ void PlayingState::renderImGui()
                 ImGui::PushItemWidth(120);
                 ImGui::InputInt("Ilość akcji##Direct", &tradeQty);
                 ImGui::PopItemWidth();
-                if (tradeQty < 1) tradeQty = 1;
+                if (tradeQty < 1)
+                    tradeQty = 1;
 
                 bool canAfford = (bankBalance >= selected->currentPrice * tradeQty * (1.0 + suckersFeeRate));
-                if (!canAfford) ImGui::BeginDisabled();
-                if (ImGui::Button("KUP TERAZ", ImVec2(100, 30))) buyShares(selected->id, tradeQty);
-                if (!canAfford) ImGui::EndDisabled();
+                if (!canAfford)
+                    ImGui::BeginDisabled();
+                if (ImGui::Button("KUP TERAZ", ImVec2(100, 30)))
+                    buyShares(selected->id, tradeQty);
+                if (!canAfford)
+                    ImGui::EndDisabled();
 
                 if (ownedShares > 0)
                 {
                     ImGui::SameLine();
-                    if (ImGui::Button("SPRZEDAJ TERAZ", ImVec2(120, 30))) sellShares(selected->id, std::min(tradeQty, ownedShares));
+                    if (ImGui::Button("SPRZEDAJ TERAZ", ImVec2(120, 30)))
+                        sellShares(selected->id, std::min(tradeQty, ownedShares));
                 }
 
-                ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
                 ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "ZLECENIA OCZEKUJĄCE (LIMIT / STOP-LOSS)");
                 ImGui::Spacing();
 
@@ -1476,12 +1812,14 @@ void PlayingState::renderImGui()
 
                 ImGui::PushItemWidth(120);
                 ImGui::InputInt("Ilość##Order", &orderQty);
-                if (orderQty < 1) orderQty = 1;
+                if (orderQty < 1)
+                    orderQty = 1;
 
                 ImGui::InputDouble("Cena Limit/SL##Order", &orderTargetPrice, 1.0, 10.0, "%.2f");
-                if (orderTargetPrice < 0.01) orderTargetPrice = 0.01;
+                if (orderTargetPrice < 0.01)
+                    orderTargetPrice = 0.01;
 
-                const char* orderTypes[] = { "LIMIT BUY (Kup gdy cena <= Target)", "LIMIT SELL (Sprzedaj gdy cena >= Target)", "STOP LOSS (Sprzedaj gdy cena <= Target)" };
+                const char *orderTypes[] = {"LIMIT BUY (Kup gdy cena <= Target)", "LIMIT SELL (Sprzedaj gdy cena >= Target)", "STOP LOSS (Sprzedaj gdy cena <= Target)"};
                 ImGui::Combo("Typ Zlecenia", &orderTypeIdx, orderTypes, IM_ARRAYSIZE(orderTypes));
                 ImGui::PopItemWidth();
 
@@ -1489,16 +1827,20 @@ void PlayingState::renderImGui()
                 if (ImGui::Button("ZŁÓŻ ZLECENIE OCZEKUJĄCE", ImVec2(220, 32)))
                 {
                     OrderType type = OrderType::LimitBuy;
-                    if (orderTypeIdx == 1) type = OrderType::LimitSell;
-                    else if (orderTypeIdx == 2) type = OrderType::StopLoss;
+                    if (orderTypeIdx == 1)
+                        type = OrderType::LimitSell;
+                    else if (orderTypeIdx == 2)
+                        type = OrderType::StopLoss;
 
                     addPendingOrder(selected->id, type, orderQty, orderTargetPrice);
                 }
             }
         }
-        else ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Wybierz spółkę z listy 'Notowania Spółek', aby wyświetlić raport.");
+        else
+            ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Wybierz spółkę z listy 'Notowania Spółek', aby wyświetlić raport.");
 
         ImGui::End();
     }
     renderVictoryModal();
+    renderPieChartsWindow();
 }

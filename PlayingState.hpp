@@ -45,20 +45,20 @@ struct PortfolioPosition
 struct TradeMarker
 {
     int companyId = 0;
-    double timeX = 0.0;    
-    double priceY = 0.0;   
-    int quantity = 0;       
-    double buyPrice = 0.0;   
-    std::string dateStr;     
-    bool isBuy = true;        
-    double profitLoss = 0.0;  
+    double timeX = 0.0;
+    double priceY = 0.0;
+    int quantity = 0;
+    double buyPrice = 0.0;
+    std::string dateStr;
+    bool isBuy = true;
+    double profitLoss = 0.0;
 };
 
 enum class OrderType
 {
     LimitBuy,
-    LimitSell, 
-    StopLoss  
+    LimitSell,
+    StopLoss
 };
 
 struct PendingOrder
@@ -106,6 +106,7 @@ private:
     bool showChartPanel = false;
     bool showPortfolioPanel = true;
     bool showBrowserPanel = true;
+    bool showPieChartsWindow = false;
 
     int activeBrowserTab = 0;
     bool autoScrollX = true;
@@ -121,24 +122,31 @@ private:
 
     double getQuarterlyQuota(int year, int quarter) const
     {
-        if (year > 1) return 1000000.0;
+        if (year > 1)
+            return 1000000.0;
         switch (quarter)
         {
-        case 1: return 15000.0;
-        case 2: return 50000.0;
-        case 3: return 150000.0;
-        case 4: return 1000000.0;
-        default: return 1000000.0;
+        case 1:
+            return 15000.0;
+        case 2:
+            return 50000.0;
+        case 3:
+            return 150000.0;
+        case 4:
+            return 1000000.0;
+        default:
+            return 1000000.0;
         }
     }
 
     void checkQuarterlyQuota();
     void renderVictoryModal();
-    
+
     void renderBrowserPanel();
     void renderMailTab();
     void renderBankTab();
     void renderDarkwebTab();
+    void renderPieChartsWindow();
 
     void loadDarkwebItems();
     bool buyDarkwebItem(int itemId);
