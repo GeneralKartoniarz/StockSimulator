@@ -1,0 +1,72 @@
+[
+  {
+    "id": 0,
+    "name": "Pendrive z wirusem 'Smażalnik'",
+    "description": "Złośliwe oprogramowanie infekujące lodówki technologiczne. Wywołuje natychmiastową panikę inwestorów.",
+    "price": 5000.0,
+    "imagePath": "assets/items/usb.png"
+  },
+  {
+    "id": 1,
+    "name": "Transfer na konto w Szwajcarii",
+    "description": "Szyfrowany rachunek bankowy ukrywający część środków przed urzędem skarbowym i komornikiem.",
+    "price": 12000.0,
+    "imagePath": "assets/items/offshore.png"
+  },
+  {
+    "id": 2,
+    "name": "Skrypt Algo-Trading",
+    "description": "Bot automatycznie wyprzedający akcje po wykryciu gwałtownego spadku na giełdzie.",
+    "price": 8000.0,
+    "imagePath": "assets/items/bot.png"
+  },
+  {
+    "id": 3,
+    "name": "Telefon do Prezesa",
+    "description": "Bezpośrednie połączenie z członkiem Rady Polityki Pieniężnej. Pozwala zapobiec podwyżce stóp procentowych.",
+    "price": 15000.0,
+    "imagePath": "assets/items/phone.png"
+  },
+  {
+    "id": 4,
+    "name": "Sfałszowany Certyfikat ESG",
+    "description": "Dokument potwierdzający ekologiczność wybranej spółki. Sztucznie podbija kurs na rynku.",
+    "price": 6500.0,
+    "imagePath": "assets/items/cert.png"
+  },
+  {
+    "id": 5,
+    "name": "Usługa Ataku DDoS",
+    "description": "Paraliżuje serwery konkurencji i tymczasowo zamraża notowania cen wybranej firmy.",
+    "price": 7500.0,
+    "imagePath": "assets/items/ddos.png"
+  },
+  {
+    "id": 6,
+    "name": "Poufny Audyt Finansowy",
+    "description": "Raport obnażający przekręty w sprawozdaniach zarządu. Gwarantowany spadek akcji.",
+    "price": 4000.0,
+    "imagePath": "assets/items/audit.png"
+  },
+  {
+    "id": 7,
+    "name": "Szyfrowana Przeglądarka VIP",
+    "description": "Daje dostęp do podwójnej liczby ofert przecieków na Skrzynce Pocztowej.",
+    "price": 9000.0,
+    "imagePath": "assets/items/tor.png"
+  },
+  {
+    "id": 8,
+    "name": "Przepustka do Klubu Wall Street",
+    "description": "Karta członkińska obniżająca prowizje maklerskie o połowę.",
+    "price": 11000.0,
+    "imagePath": "assets/items/card.png"
+  },
+  {
+    "id": 9,
+    "name": "Sfałszowane Zaświadczenie o Dochodach",
+    "description": "Natychmiast zwiększa Twój mnożnik zdolności kredytowej w Banku Centralnym o +0.3x.",
+    "price": 5500.0,
+    "imagePath": "assets/items/knf.png"
+  }
+]

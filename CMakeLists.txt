@@ -70,6 +70,7 @@ add_executable(StockSimulator
     Mail.hpp
     EventSystem.hpp
     EventSystem.cpp
+    DarkwebItem.hpp
 )
 
 if(MSVC)

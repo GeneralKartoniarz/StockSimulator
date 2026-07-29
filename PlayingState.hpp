@@ -3,12 +3,14 @@
 #include "Company.hpp"
 #include "Commodity.hpp"
 #include "Mail.hpp"
+#include "DarkwebItem.hpp"
 #include "EventSystem.hpp"
+#include "BankSystem.hpp"
 #include <vector>
 #include <unordered_map>
 #include <optional>
 #include <string>
-#include "BankSystem.hpp"
+
 struct GameTime
 {
     int year = 1;
@@ -20,6 +22,7 @@ struct GameTime
     float accumulator = 0.0f;
     bool update(float dt);
 };
+
 struct RunStats
 {
     int daysSurvived = 0;
@@ -31,12 +34,14 @@ struct RunStats
     bool isVictory = false;
     std::string endReason = "";
 };
+
 struct PortfolioPosition
 {
     int companyId = 0;
     int quantity = 0;
     double avgBuyPrice = 0.0;
 };
+
 struct TradeMarker
 {
     int companyId = 0;
@@ -48,17 +53,37 @@ struct TradeMarker
     bool isBuy = true;        
     double profitLoss = 0.0;  
 };
+
+enum class OrderType
+{
+    LimitBuy,
+    LimitSell, 
+    StopLoss  
+};
+
+struct PendingOrder
+{
+    int id = 0;
+    int companyId = 0;
+    OrderType type = OrderType::LimitBuy;
+    int quantity = 1;
+    double targetPrice = 0.0;
+};
+
 class PlayingState : public GameState
 {
 private:
     std::vector<Company> companies;
     std::vector<Commodity> commodities;
+    std::vector<DarkwebItem> darkwebItems;
     std::optional<int> selectedCompanyId;
 
     double bankBalance = 10000.00;
     double suckersFeeRate = 0.02;
     std::unordered_map<int, PortfolioPosition> portfolio;
-    int tradeQuantity = 1;
+
+    std::vector<PendingOrder> pendingOrders;
+    int nextOrderId = 1;
 
     std::vector<MailMessage> inbox;
     std::optional<int> selectedMailId;
@@ -67,8 +92,10 @@ private:
     int lastRecordedDay = 0;
 
     EventSystem eventSystem;
-
     GameTime gameTime;
+
+    float timeSpeedMultiplier = 1.0f;
+    float savedSpeedMultiplier = 1.0f;
 
     std::vector<double> timeHistory;
     double totalSimulatedHours = 0;
@@ -78,14 +105,14 @@ private:
     bool showDetailsPanel = false;
     bool showChartPanel = false;
     bool showPortfolioPanel = true;
-    bool showMailPanel = true;
+    bool showBrowserPanel = true;
 
+    int activeBrowserTab = 0;
     bool autoScrollX = true;
 
     static constexpr size_t MAX_HISTORY_SIZE = 5500;
     std::vector<TradeMarker> tradeMarkers;
     BankSystem bankSystem;
-    bool showBankPanel = false;
     double loanAmountInput = 3000.0;
 
     RunStats stats;
@@ -94,32 +121,36 @@ private:
 
     double getQuarterlyQuota(int year, int quarter) const
     {
-        if (year > 1)
-            return 1000000.0;
+        if (year > 1) return 1000000.0;
         switch (quarter)
         {
-        case 1:
-            return 15000.0;
-        case 2:
-            return 50000.0;
-        case 3:
-            return 150000.0;
-        case 4:
-            return 1000000.0;
-        default:
-            return 1000000.0;
+        case 1: return 15000.0;
+        case 2: return 50000.0;
+        case 3: return 150000.0;
+        case 4: return 1000000.0;
+        default: return 1000000.0;
         }
     }
 
     void checkQuarterlyQuota();
     void renderVictoryModal();
-    void renderBankPanel();
+    
+    void renderBrowserPanel();
+    void renderMailTab();
+    void renderBankTab();
+    void renderDarkwebTab();
+
+    void loadDarkwebItems();
+    bool buyDarkwebItem(int itemId);
+
+    void processPendingOrders();
+    void addPendingOrder(int companyId, OrderType type, int quantity, double targetPrice);
+    void cancelPendingOrder(int orderId);
 
     void generateStartingCompanies();
     void generateStartingCommodities();
     void renderClock();
     void renderPortfolioPanel();
-    void renderMailPanel();
 
     double calculateNetWorth() const;
     bool payBill(int billId);
