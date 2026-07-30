@@ -11,6 +11,7 @@
 #include <optional>
 #include <string>
 #include "Cross.hpp"
+#include <SFML/Audio.hpp>
 struct GameTime
 {
     int year = 1;
@@ -85,7 +86,11 @@ private:
     std::vector<PendingOrder> pendingOrders;
     int nextOrderId = 1;
 
+    sf::SoundBuffer mailSoundBuffer;
+    std::optional<sf::Sound> mailSound;
+    sf::Music bgMusic;
     std::vector<MailMessage> inbox;
+    size_t lastInboxSize = 0;
     std::optional<int> selectedMailId;
     int nextMailId = 1;
     int daysPassedCounter = 0;
@@ -107,6 +112,7 @@ private:
     bool showPortfolioPanel = true;
     bool showBrowserPanel = true;
     bool showPieChartsWindow = false;
+    bool showPauseMenu = false;
 
     int activeBrowserTab = 0;
     bool autoScrollX = true;
@@ -139,7 +145,6 @@ private:
         }
     }
 
-    void checkQuarterlyQuota();
     void renderVictoryModal();
 
     void renderBrowserPanel();
@@ -147,6 +152,7 @@ private:
     void renderBankTab();
     void renderDarkwebTab();
     void renderPieChartsWindow();
+    void renderPauseMenu();
 
     void loadDarkwebItems();
     bool buyDarkwebItem(int itemId);
@@ -159,7 +165,7 @@ private:
     void generateStartingCommodities();
     void renderClock();
     void renderPortfolioPanel();
-    
+
     double calculateNetWorth() const;
     bool payBill(int billId);
 

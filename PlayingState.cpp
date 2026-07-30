@@ -87,13 +87,39 @@ PlayingState::PlayingState(Game *game) : GameState(game)
     inbox.push_back(startBill);
 
     selectedMailId = welcomeMail.id;
+    std::string musicPath = std::filesystem::absolute("assets/b-gmusic.mp3").generic_string();
+    if (bgMusic.openFromFile(musicPath))
+    {
+        bgMusic.setLooping(true);
+        bgMusic.setVolume(20.0f);
+        bgMusic.play();
+    }
+    else
+    {
+        std::cerr << "[BLAD AUDIO] Nie udalo sie wczytac assets/bgmusic.mp3\n";
+    }
+    std::string soundPath = std::filesystem::absolute("assets/mailsound.wav").generic_string();
+    if (mailSoundBuffer.loadFromFile(soundPath))
+    {
+        mailSound.emplace(mailSoundBuffer);
+        mailSound->setVolume(75.0f);
+    }
+    else
+    {
+        std::cerr << "[BLAD AUDIO] Nie udalo sie wczytac assets/mailsound.wav\n";
+    }
+    lastInboxSize = inbox.size();
 }
 
 void PlayingState::handleEvent(const sf::Event &event)
 {
     if (const auto *keyPressed = event.getIf<sf::Event::KeyPressed>())
     {
-        if (keyPressed->code == sf::Keyboard::Key::Space)
+        if (keyPressed->code == sf::Keyboard::Key::Escape)
+        {
+            showPauseMenu = !showPauseMenu;
+        }
+        else if (keyPressed->code == sf::Keyboard::Key::Space)
         {
             if (timeSpeedMultiplier > 0.0f)
             {
@@ -105,15 +131,15 @@ void PlayingState::handleEvent(const sf::Event &event)
                 timeSpeedMultiplier = (savedSpeedMultiplier > 0.0f) ? savedSpeedMultiplier : 1.0f;
             }
         }
-        else if (keyPressed->code == sf::Keyboard::Key::Num1 || keyPressed->code == sf::Keyboard::Key::Numpad1)
+        else if (keyPressed->code == sf::Keyboard::Key::I)
         {
             timeSpeedMultiplier = 1.0f;
         }
-        else if (keyPressed->code == sf::Keyboard::Key::Num2 || keyPressed->code == sf::Keyboard::Key::Numpad2)
+        else if (keyPressed->code == sf::Keyboard::Key::O)
         {
             timeSpeedMultiplier = 3.0f;
         }
-        else if (keyPressed->code == sf::Keyboard::Key::Num3 || keyPressed->code == sf::Keyboard::Key::Numpad3)
+        else if (keyPressed->code == sf::Keyboard::Key::P)
         {
             timeSpeedMultiplier = 10.0f;
         }
@@ -187,6 +213,8 @@ void PlayingState::processPendingOrders()
 }
 void PlayingState::update(sf::Time deltaTime)
 {
+    if (showPauseMenu)
+        return;
     float dt = deltaTime.asSeconds() * timeSpeedMultiplier;
 
     if (gameTime.update(dt))
@@ -344,6 +372,14 @@ void PlayingState::update(sf::Time deltaTime)
             std::erase_if(tradeMarkers, [oldestVisibleTime](const TradeMarker &marker)
                           { return marker.timeX < oldestVisibleTime; });
         }
+    }
+    if (inbox.size() > lastInboxSize)
+    {
+        if (mailSound.has_value())
+        {
+            mailSound->play();
+        }
+        lastInboxSize = inbox.size();
     }
 }
 
@@ -949,7 +985,49 @@ void PlayingState::renderBrowserPanel()
     }
     ImGui::End();
 }
+void PlayingState::renderPauseMenu()
+{
+    if (!showPauseMenu)
+        return;
 
+    ImGui::OpenPopup("=== MENU PAUZY ===");
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(340, 170));
+    if (ImGui::BeginPopupModal("=== MENU PAUZY ===", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    {
+        ImGui::Spacing();
+        if (ImGui::Button("Wznów grę (ESC)", ImVec2(-1, 35)))
+        {
+            showPauseMenu = false;
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::Spacing();
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.1f, 0.1f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
+        if (ImGui::Button("Zbankrutuj", ImVec2(-1, 35)))
+        {
+            showPauseMenu = false;
+            ImGui::CloseCurrentPopup();
+            stats.isVictory = false;
+            stats.endReason = "Ogłoszono upadłość";
+            game->changeState(std::make_unique<BankruptcyState>(game, stats));
+        }
+        ImGui::PopStyleColor(2);
+        ImGui::Spacing();
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.1f, 0.1f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.05f, 0.05f, 1.0f));
+        if (ImGui::Button("Wyjdź z gry", ImVec2(-1, 30)))
+        {
+            game->close();
+        }
+        ImGui::PopStyleColor(3);
+
+        ImGui::EndPopup();
+    }
+}
 void PlayingState::renderMailTab()
 {
     ImGui::BeginChild("ListaMaili", ImVec2(280, 0), true);
@@ -1378,13 +1456,6 @@ void PlayingState::renderImGui()
     ImGui::Spacing();
     ImGui::Separator();
     ImGui::Spacing();
-
-    if (ImGui::Button("Zbankrutuj", ImVec2(-1, 30)))
-    {
-        stats.isVictory = false;
-        stats.endReason = "Ogłoszono upadłość na własne życzenie.";
-        game->changeState(std::make_unique<BankruptcyState>(game, stats));
-    }
     ImGui::End();
 
     if (showBrowserPanel)
@@ -1890,4 +1961,5 @@ void PlayingState::renderImGui()
 
     renderVictoryModal();
     renderPieChartsWindow();
+    renderPauseMenu();
 }
