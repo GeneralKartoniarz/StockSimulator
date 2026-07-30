@@ -177,29 +177,6 @@ void PlayingState::processPendingOrders()
         {
             char timeBuf[64];
             snprintf(timeBuf, sizeof(timeBuf), "R%d M%d D%02d", gameTime.year, gameTime.monthInQuarter, gameTime.day);
-
-            MailMessage mail;
-            mail.id = nextMailId++;
-            mail.type = MailType::News;
-            mail.sender = "System Maklerski (Automat)";
-            mail.timestamp = timeBuf;
-
-            std::string typeStr = (it->type == OrderType::LimitBuy) ? "LIMIT BUY" : ((it->type == OrderType::LimitSell) ? "LIMIT SELL" : "STOP LOSS");
-
-            if (success)
-            {
-                mail.subject = "ZLECENIE WYKONANE: " + typeStr + " (" + compIt->ticker + ")";
-                mail.body = "Zlecenie " + typeStr + " dla " + compIt->name + " zostało zrealizowane po kursie " +
-                            std::to_string(compIt->currentPrice) + " PLN.\nIlość: " + std::to_string(it->quantity) + " szt.";
-            }
-            else
-            {
-                mail.subject = "ZLECENIE ODRZUCONE: " + typeStr + " (" + compIt->ticker + ")";
-                mail.body = "Zlecenie " + typeStr + " dla " + compIt->name + " wyzwołało się przy kursie " +
-                            std::to_string(compIt->currentPrice) + " PLN, ale transakcja NIE MOGŁA zostać zrealizowana (brak środków lub akcji w portfelu).";
-            }
-
-            inbox.push_back(mail);
             it = pendingOrders.erase(it);
         }
         else
