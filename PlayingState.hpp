@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include <optional>
 #include <string>
-
+#include "Cross.hpp"
 struct GameTime
 {
     int year = 1;
@@ -159,7 +159,7 @@ private:
     void generateStartingCommodities();
     void renderClock();
     void renderPortfolioPanel();
-
+    
     double calculateNetWorth() const;
     bool payBill(int billId);
 

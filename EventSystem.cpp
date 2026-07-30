@@ -107,11 +107,10 @@ void EventSystem::generateWeeklyLivingBill(double netWorth, std::vector<MailMess
 bool EventSystem::processUnpaidBills(double& bankBalance, std::vector<MailMessage>& inbox, int& nextMailId, const std::string& timestamp, Game* game)
 {
     std::vector<MailMessage> newMails;
-    size_t currentInboxSize = inbox.size();
+    std::vector<int> billIdsToCleanup;
 
-    for (size_t i = 0; i < currentInboxSize; ++i)
+    for (auto& mail : inbox)
     {
-        auto& mail = inbox[i];
         if (mail.type == MailType::Bill && !mail.isResolved)
         {
             if (mail.isNew)
@@ -156,11 +155,7 @@ bool EventSystem::processUnpaidBills(double& bankBalance, std::vector<MailMessag
                 {
                     bankBalance -= totalPenaltyCost;
                     mail.isResolved = true;
-
-                    int targetId = mail.id;
-                    std::erase_if(inbox, [targetId](const MailMessage& m) {
-                        return m.parentBillId == targetId;
-                    });
+                    billIdsToCleanup.push_back(mail.id);
 
                     MailMessage execution;
                     execution.id = nextMailId++;
@@ -181,10 +176,16 @@ bool EventSystem::processUnpaidBills(double& bankBalance, std::vector<MailMessag
         }
     }
 
+    for (int targetId : billIdsToCleanup)
+    {
+        std::erase_if(inbox, [targetId](const MailMessage& m) {
+            return m.parentBillId == targetId;
+        });
+    }
+
     inbox.insert(inbox.end(), newMails.begin(), newMails.end());
     return true;
 }
-
 void EventSystem::triggerGlobalEvent(std::vector<Commodity> &commodities, std::vector<Company> &companies, std::vector<MailMessage> &inbox, int &nextMailId, const std::string &timestamp)
 {
     std::vector<EventTemplate> matches;

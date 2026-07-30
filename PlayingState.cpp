@@ -185,7 +185,6 @@ void PlayingState::processPendingOrders()
         }
     }
 }
-
 void PlayingState::update(sf::Time deltaTime)
 {
     float dt = deltaTime.asSeconds() * timeSpeedMultiplier;
@@ -1522,7 +1521,7 @@ void PlayingState::renderImGui()
                 {
                     ImPlot::PlotLine(company.ticker.c_str(), timeHistory.data(), company.priceHistory.data(), (int)timeHistory.size());
 
-                    if (isHovered && closestIdx != -1)
+                    if (isHovered && closestIdx != -1 && static_cast<size_t>(closestIdx) < company.priceHistory.size())
                     {
                         double targetY = company.priceHistory[closestIdx];
                         ImVec4 lineColor = ImPlot::GetLastItemColor();
@@ -1534,6 +1533,39 @@ void PlayingState::renderImGui()
                         ImPlot::PopStyleVar(2);
                         ImPlot::PopStyleColor(2);
                     }
+
+                    size_t fastPeriod = 15;
+                    size_t slowPeriod = 40;
+
+                    if (company.priceHistory.size() >= slowPeriod)
+                    {
+                        auto smaFast = calculateSMA(company.priceHistory, fastPeriod);
+                        auto smaSlow = calculateSMA(company.priceHistory, slowPeriod);
+
+                        std::string fastLabel = company.ticker + " SMA(" + std::to_string(fastPeriod) + ")";
+                        std::string slowLabel = company.ticker + " SMA(" + std::to_string(slowPeriod) + ")";
+
+                        ImPlot::PlotLine(fastLabel.c_str(), timeHistory.data(), smaFast.data(), (int)timeHistory.size());
+                        ImPlot::PlotLine(slowLabel.c_str(), timeHistory.data(), smaSlow.data(), (int)timeHistory.size());
+
+                        auto crosses = findCrossPoints(timeHistory, smaFast, smaSlow, slowPeriod);
+
+                        for (const auto &cross : crosses)
+                        {
+                            if (cross.isGolden)
+                            {
+                                ImPlot::SetNextMarkerStyle(ImPlotMarker_Cross, 10.0f, ImVec4(1.0f, 0.84f, 0.0f, 1.0f), 1.0f, ImVec4(1.0f, 0.84f, 0.0f, 1.0f));
+                                std::string label = "##GoldenCross_" + company.ticker + "_" + std::to_string(cross.x);
+                                ImPlot::PlotScatter(label.c_str(), &cross.x, &cross.y, 1);
+                            }
+                            else
+                            {
+                                ImPlot::SetNextMarkerStyle(ImPlotMarker_Cross, 8.0f, ImVec4(1.0f, 0.2f, 0.2f, 1.0f), 1.0f, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
+                                std::string label = "##DeathCross_" + company.ticker + "_" + std::to_string(cross.x);
+                                ImPlot::PlotScatter(label.c_str(), &cross.x, &cross.y, 1);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -1543,15 +1575,15 @@ void PlayingState::renderImGui()
                 {
                     ImPlot::PlotLine(comm.symbol.c_str(), timeHistory.data(), comm.priceHistory.data(), (int)timeHistory.size());
 
-                    if (isHovered && closestIdx != -1)
+                    if (isHovered && closestIdx != -1 && static_cast<size_t>(closestIdx) < comm.priceHistory.size())
                     {
                         double targetY = comm.priceHistory[closestIdx];
-                        ImVec4 commColor = ImPlot::GetLastItemColor();
-                        ImPlot::PushStyleColor(ImPlotCol_MarkerOutline, commColor);
-                        ImPlot::PushStyleColor(ImPlotCol_MarkerFill, commColor);
+                        ImVec4 lineColor = ImPlot::GetLastItemColor();
+                        ImPlot::PushStyleColor(ImPlotCol_MarkerOutline, lineColor);
+                        ImPlot::PushStyleColor(ImPlotCol_MarkerFill, lineColor);
                         ImPlot::PushStyleVar(ImPlotStyleVar_Marker, ImPlotMarker_Circle);
                         ImPlot::PushStyleVar(ImPlotStyleVar_MarkerSize, 5.0f);
-                        ImPlot::PlotScatter(("##dot_" + comm.symbol).c_str(), &targetX, &targetY, 1);
+                        ImPlot::PlotScatter(("##dot_" + comm.name).c_str(), &targetX, &targetY, 1);
                         ImPlot::PopStyleVar(2);
                         ImPlot::PopStyleColor(2);
                     }
@@ -1567,12 +1599,12 @@ void PlayingState::renderImGui()
 
                 for (const auto &company : companies)
                 {
-                    if (company.showOnChart)
+                    if (company.showOnChart && static_cast<size_t>(closestIdx) < company.priceHistory.size())
                         ImGui::Text("%s: %.2f PLN", company.ticker.c_str(), company.priceHistory[closestIdx]);
                 }
                 for (const auto &comm : commodities)
                 {
-                    if (comm.showOnChart)
+                    if (comm.showOnChart && static_cast<size_t>(closestIdx) < comm.priceHistory.size())
                         ImGui::Text("%s: %.2f %s", comm.symbol.c_str(), comm.priceHistory[closestIdx], comm.unit.c_str());
                 }
                 ImGui::EndTooltip();
@@ -1634,7 +1666,7 @@ void PlayingState::renderImGui()
                     }
                 }
             }
-            ImPlot::EndPlot(); 
+            ImPlot::EndPlot();
         }
 
         ImGui::Spacing();
@@ -1751,8 +1783,8 @@ void PlayingState::renderImGui()
 
         ImGui::EndChild();
         ImGui::End();
-    } 
-    
+    }
+
     if (showDetailsPanel)
     {
         ImGui::SetNextWindowPos(screenCenter, ImGuiCond_Appearing, pivotCenter);
